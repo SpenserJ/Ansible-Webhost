@@ -1,0 +1,8 @@
+---
+- name: Install MySQL (Debian)
+  apt: pkg=mysql-server state=present
+  when: ansible_os_family == "Debian"
+- name: Install MySQL (RedHat)
+  yum: pkg=mysql-server state=present
+  when: ansible_os_family == "RedHat"
+

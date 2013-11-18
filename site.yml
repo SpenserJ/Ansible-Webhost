@@ -1,0 +1,4 @@
+---
+- hosts: all
+- include: webservers.yml
+- include: developers.yml

@@ -1,0 +1,8 @@
+---
+- hosts: webservers
+  name: Webserver
+  sudo: True
+  roles:
+  - apache2
+  - php
+  - mysql

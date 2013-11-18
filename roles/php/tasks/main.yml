@@ -1,0 +1,7 @@
+---
+- name: Install PHP (Debian)
+  apt: pkg=php5 state=present
+  when: ansible_os_family == "Debian"
+- name: Install PHP (RedHat)
+  yum: pkg=php state=present
+  when: ansible_os_family == "RedHat"
