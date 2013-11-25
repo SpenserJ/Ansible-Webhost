@@ -1,0 +1,49 @@
+#!/bin/bash
+ask () {
+  printf "\n$1"
+  read -p " (y/N) "
+  if [[ $REPLY =~ ^[Yy]$  ]]; then
+    return 0;
+  else
+    return 1;
+  fi
+}
+
+if [ "${1}" == "" ]; then
+  echo "Please provide a database name as argument #1";
+  exit 1;
+fi
+
+if [[ "${1}" =~ [^a-z0-9\-_] ]]; then
+  echo "The database name may only contain a-z 0-9 - and _";
+  exit 1;
+fi
+
+DATABASE_EXISTS=$(mysql -e "SHOW DATABASES;" | grep $1);
+if [ "$DATABASE_EXISTS" != "" ]; then
+  if ask "The database ${1} already exists. Would you like to delete it?"; then
+    mysql -e "DROP DATABASE ${1};";
+  else
+    echo "Quitting";
+    exit 1;
+  fi
+fi
+
+USER_EXISTS=$(mysql -e "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = '${1}');" | tail -c 2);
+if [ "$USER_EXISTS" != "0" ]; then
+  mysql -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${1}'@'localhost';\
+            DELETE FROM mysql.user WHERE user = '${1}';\
+            FLUSH PRIVILEGES;"
+fi
+
+PASSWORD=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32);
+mysql -e "CREATE DATABASE \`${1}\` /*\!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_bin */;\
+CREATE USER '${1}'@'localhost' IDENTIFIED BY '${PASSWORD}';\
+GRANT USAGE ON *.* TO '${1}'@'localhost' IDENTIFIED BY '${PASSWORD}' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;\
+GRANT ALL PRIVILEGES ON \`${1}\`.* TO '${1}'@'localhost';\
+FLUSH PRIVILEGES;"
+
+printf "\nThe following MySQL credentials have been created. Please restore the sql export into this database\n\
+Database: ${1}\n\
+Username: ${1}\n\
+Password: ${PASSWORD}\n\n";

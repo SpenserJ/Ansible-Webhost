@@ -1,7 +1,35 @@
 ---
-- name: Install PHP (Debian)
-  apt: pkg=php5 state=present
-  when: ansible_os_family == "Debian"
-- name: Install PHP (RedHat)
-  yum: pkg=php state=present
-  when: ansible_os_family == "RedHat"
+- name: Get EPEL repository
+  get_url: dest=/tmp/epel-release.rpm  url=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+- name: Install EPEL repository
+  yum: pkg=/tmp/epel-release.rpm state=installed
+- name: Install PHP
+  action: "{{ packager }} pkg={{ php }} state=present"
+- name: Install PHP Extensions
+  action: "{{ packager }} pkg={{ php }}-${item} state=present"
+  with_items:
+  - mbstring
+  - mysqli
+  - pdo
+  - mcrypt
+  - pecl-xdebug
+  - xhprof
+  - pear
+  - devel
+  - gd
+  - xml
+  - xml
+  notify:
+  - restart apache2
+- name: Have we installed Drush before
+  stat: path=/usr/share/pear/.channels/pear.drush.org.reg
+  register: installed_drush
+- name: Discover Drush Channel
+  command: pear channel-discover pear.drush.org
+  when: installed_drush.stat.exists == false
+- name: Install Drush
+  command: pear install drush/drush
+  when: installed_drush.stat.exists == false
+- name: Prepare Drush for use
+  command: drush
+  when: installed_drush.stat.exists == false

@@ -1,5 +1,5 @@
 ---
 - name: restart apache2
-  service: name={{ package }} state=restarted
+  service: name={{ apache2 }} state=restarted
 - name: restart iptables
   service: name=iptables state=restarted

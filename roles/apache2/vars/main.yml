@@ -1,8 +1,3 @@
-packager: apt
-when: ansible_os_family == "Debian"
-packager: yum 
-when: ansible_os_family == "RedHat"
-
 apache2: apache2
 when: ansible_os_family == "Debian"
 apache2: httpd

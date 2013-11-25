@@ -20,16 +20,16 @@
                     key="{{ lookup('file', '/home/ansible-bootstrap/.ssh/id_rsa.pub')  }}"
                     path='/etc/skel/.ssh/authorized_keys'
                     manage_dir=no
-  - name: Add Spenser's public key to authorized_keys
+  - name: Add Administrator's public key to authorized_keys
     authorized_key: user=root
                     key="{{ lookup('file', '/home/ansible-bootstrap/.ssh/spenser.pub')  }}"
                     path='/etc/skel/.ssh/authorized_keys'
                     manage_dir=no
   - name: Create the user account
     user: name={{ username }} password={{ password }} shell=/bin/bash
-  - name: Create Spenser's account
+  - name: Create Administrator's account
     user: name=spenser append=yes shell=/bin/bash
-  - name: Setup Spenser as a Sudoer
+  - name: Setup Administrator as a Sudoer
     lineinfile: dest=/etc/sudoers
                 regexp='/^spenser\s/'
                 line='spenser ALL=(ALL) NOPASSWD:ALL'

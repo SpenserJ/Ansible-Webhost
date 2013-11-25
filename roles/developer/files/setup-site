@@ -1,0 +1,43 @@
+#!/bin/bash
+ask () {
+  printf "\n$1"
+  read -p " (y/N) "
+  if [[ $REPLY =~ ^[Yy]$  ]]; then
+    return 0;
+  else
+    return 1;
+  fi
+}
+
+if [ "${1}" == "" ]; then
+  echo "Please provide a site name as argument #1";
+  exit 1;
+fi
+
+if [[ "${1}" =~ [^a-z0-9\-_] ]]; then
+  echo "The site name may only contain a-z 0-9 - and _";
+  exit 1;
+fi
+
+if [ "${2}" == "" ]; then
+  echo "Please provide a repository as argument #2";
+  exit 1;
+fi
+
+DIR=/var/www/shared/$1
+if [ -d "$DIR" ]; then
+  if ask "The folder ${DIR} already exists. Would you like to delete it?"; then
+    rm -rf "${DIR}"
+  else
+    echo "Quitting";
+    exit 1;
+  fi
+fi
+
+echo "Site Name: ${1}";
+echo "Repository: ${2}";
+echo "Folder: ${DIR}";
+
+git clone $2 $DIR
+echo "";
+setup-database "${1}";

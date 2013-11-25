@@ -1,0 +1,18 @@
+---
+- name: Install Git
+  action: "{{ packager }} pkg={{ git }} state=latest"
+- name: Install Build Essential (Debian)
+  apt: pkg=build-essential state=present
+  when: ansible_os_family == "Debian"
+- name: Install Development Tools (RedHat)
+  yum: name="@Development tools" state=present
+  when: ansible_os_family == "RedHat"
+- name: Install Vim
+  apt: pkg=vim state=present
+  when: ansible_os_family == "Debian"
+- name: Install GraphViz
+  action: "{{ packager }} pkg=graphviz state=latest"
+- name: Copy setup-site Application
+  copy: src=setup-site dest=/usr/bin/setup-site owner=root group=root mode=0755
+- name: Copy setup-database Application
+  copy: src=setup-database dest=/usr/bin/setup-database owner=root group=root mode=0755

@@ -1,0 +1,12 @@
+[devs]
+dev-johan dev_user=johan
+dev-ben dev_user=ben
+dev-mike dev_user=mike
+dev-chad dev_user=chad
+dev-spenser dev_user=spenser
+
+[webservers:children]
+devs
+
+[ansible]
+localhost ansible_connection=local

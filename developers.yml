@@ -2,19 +2,6 @@
 - hosts: devs
   name: Developer Tools
   sudo: True
-  tasks:
-  - name: Install Git (Debian)
-    apt: pkg=git-core state=present
-    when: ansible_os_family == "Debian"
-  - name: Install Git (RedHat)
-    yum: pkg=git state=present
-    when: ansible_os_family == "RedHat"
-  - name: Install Build Essential (Debian)
-    apt: pkg=build-essential state=present
-    when: ansible_os_family == "Debian"
-  - name: Install Development Tools (RedHat)
-    yum: name="@Development tools" state=present
-    when: ansible_os_family == "RedHat"
-  - name: Install Vim
-    apt: pkg=vim state=present
-    when: ansible_os_family == "Debian"
+  roles:
+  - developer
+  - ssh

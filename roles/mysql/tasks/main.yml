@@ -1,8 +1,40 @@
 ---
-- name: Install MySQL (Debian)
-  apt: pkg=mysql-server state=present
-  when: ansible_os_family == "Debian"
-- name: Install MySQL (RedHat)
-  yum: pkg=mysql-server state=present
-  when: ansible_os_family == "RedHat"
-
+- name: Install MySQL
+  action: "{{ packager }} pkg=mysql-server state=present"
+- name: Run MySQL on boot
+  service: name=mysqld enabled=yes state=started
+- name: Install MySQL-python
+  action: "{{ packager }} pkg=MySQL-python state=present"
+- name: Check for my.cnf
+  stat: path=/home/spenser/.my.cnf
+  register: mycnf
+- name: Copy my.cnf
+  template: src=my.cnf dest=/home/spenser/.my.cnf owner=spenser mode=0600
+  when: mycnf.stat.exists == false
+- name: Reset my.cnf's root password on install
+  lineinfile: dest=/home/spenser/.my.cnf regexp='^password='  line="password="
+  when: mycnf.stat.exists == false
+- name: Set MySQL Root
+  mysql_user: name=root host="$item" password={{ mysql_root_password }} priv=*.*:ALL,GRANT
+  with_items:
+  - $ansible_hostname
+  - 127.0.0.1
+  - ::1
+  - localhost
+- name: Copy my.cnf to Administrator
+  template: src=my.cnf dest=/home/spenser/.my.cnf owner=spenser group=spenser mode=0600
+- name: Copy my.cnf to root
+  template: src=my.cnf dest=/root/.my.cnf owner=root group=root mode=0600
+- name: Copy my.cnf to user
+  template: src=my.cnf dest=/home/{{ dev_user }}/.my.cnf owner={{ dev_user }} group={{ dev_user }} mode=0600
+- name: Delete anonymous MySQL server user for $server_hostname
+  action: mysql_user user="" host="$item" state="absent"
+  with_items:
+  - $ansible_hostname
+  - 127.0.0.1
+  - ::1
+  - localhost
+- name: Delete anonymous MySQL server user for localhost
+  action: mysql_user user="" state="absent"
+- name: Remove the MySQL test database
+  action: mysql_db db=test state=absent

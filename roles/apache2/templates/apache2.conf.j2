@@ -1,27 +1,18 @@
 ServerTokens OS
 ServerRoot "/etc/httpd"
 PidFile run/httpd.pid
-Timeout 60
+Timeout 90
 KeepAlive Off
 MaxKeepAliveRequests 100
 KeepAliveTimeout 15
 
 <IfModule prefork.c>
-  StartServers       8
-  MinSpareServers    5
-  MaxSpareServers   20
-  ServerLimit      256
-  MaxClients       256
-  MaxRequestsPerChild  4000
-</IfModule>
-
-<IfModule worker.c>
-  StartServers         4
-  MaxClients         300
-  MinSpareThreads     25
-  MaxSpareThreads     75 
-  ThreadsPerChild     25
-  MaxRequestsPerChild  0
+StartServers       3
+MinSpareServers    3
+MaxSpareServers   5
+ServerLimit      12
+MaxClients       12
+MaxRequestsPerChild  4000
 </IfModule>
 
 Listen 80
@@ -63,6 +54,7 @@ LoadModule negotiation_module modules/mod_negotiation.so
 LoadModule dir_module modules/mod_dir.so
 LoadModule actions_module modules/mod_actions.so
 LoadModule speling_module modules/mod_speling.so
+LoadModule userdir_module modules/mod_userdir.so
 LoadModule alias_module modules/mod_alias.so
 LoadModule substitute_module modules/mod_substitute.so
 LoadModule rewrite_module modules/mod_rewrite.so
@@ -77,60 +69,61 @@ LoadModule suexec_module modules/mod_suexec.so
 LoadModule disk_cache_module modules/mod_disk_cache.so
 LoadModule cgi_module modules/mod_cgi.so
 LoadModule version_module modules/mod_version.so
-
 Include conf.d/*.conf
-
 User apache
 Group apache
-
 ServerAdmin root@localhost
 UseCanonicalName Off
-DocumentRoot "/var/www/html"
+DocumentRoot "/var/www"
 
-<Directory />
-  Options FollowSymLinks
-  AllowOverride None
-</Directory>
-
-<Directory "/var/www/html">
-  Options Indexes FollowSymLinks
-  AllowOverride None
-  Order allow,deny
-  Allow from all
+<Directory "/var/www">
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Order allow,deny
+    Allow from all
 </Directory>
 
 DirectoryIndex index.html index.html.var
+
 AccessFileName .htaccess
 <Files ~ "^\.ht">
-  Order allow,deny
-  Deny from all
-  Satisfy All
+    Order allow,deny
+    Deny from all
+    Satisfy All
 </Files>
 
 TypesConfig /etc/mime.types
 DefaultType text/plain
+
 <IfModule mod_mime_magic.c>
-  MIMEMagicFile conf/magic
+    MIMEMagicFile conf/magic
 </IfModule>
 
 HostnameLookups Off
 ErrorLog logs/error_log
 LogLevel warn
 LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat "%v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined_vhost
 LogFormat "%h %l %u %t \"%r\" %>s %b" common
 LogFormat "%{Referer}i -> %U" referer
 LogFormat "%{User-agent}i" agent
 CustomLog logs/access_log combined
-ServerSignature Off
-Alias /icons/ "/var/www/icons/"
-<Directory "/var/www/icons">
-  Options Indexes MultiViews FollowSymLinks
-  AllowOverride None
-  Order allow,deny
-  Allow from all
-</Directory>
-IndexOptions FancyIndexing VersionSort NameWidth=* HTMLTable Charset=UTF-8
 
+ServerSignature On
+
+Alias /icons/ "/etc/httpd/icons/"
+<Directory "/etc/httpd/icons">
+    Options Indexes MultiViews FollowSymLinks
+    AllowOverride None
+    Order allow,deny
+    Allow from all
+</Directory>
+
+<IfModule mod_dav_fs.c>
+    DAVLockDB /var/lib/dav/lockdb
+</IfModule>
+
+IndexOptions FancyIndexing VersionSort NameWidth=* HTMLTable Charset=UTF-8
 AddIconByEncoding (CMP,/icons/compressed.gif) x-compress x-gzip
 AddIconByType (TXT,/icons/text.gif) text/*
 AddIconByType (IMG,/icons/image2.gif) image/*
@@ -196,23 +189,23 @@ AddType application/x-pkcs7-crl    .crl
 AddHandler type-map var
 AddType text/html .shtml
 AddOutputFilter INCLUDES .shtml
-Alias /error/ "/var/www/error/"
+
+Alias /error/ "/etc/httpd/error/"
 <IfModule mod_negotiation.c>
-  <IfModule mod_include.c>
-    <Directory "/var/www/error">
-      AllowOverride None
-      Options IncludesNoExec
-      AddOutputFilter Includes html
-      AddHandler type-map var
-      Order allow,deny
-      Allow from all
-      LanguagePriority en es de fr
-      ForceLanguagePriority Prefer Fallback
-    </Directory>
-  </IfModule>
+    <IfModule mod_include.c>
+        <Directory "/etc/httpd/error">
+            AllowOverride None
+            Options IncludesNoExec
+            AddOutputFilter Includes html
+            AddHandler type-map var
+            Order allow,deny
+            Allow from all
+            LanguagePriority en es de fr
+            ForceLanguagePriority Prefer Fallback
+        </Directory>
+    </IfModule>
 </IfModule>
 
-# Browser Fixes
 BrowserMatch "Mozilla/2" nokeepalive
 BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
 BrowserMatch "RealPlayer 4\.0" force-response-1.0
@@ -225,3 +218,19 @@ BrowserMatch "^WebDAVFS/1.[0123]" redirect-carefully
 BrowserMatch "^gnome-vfs/1.0" redirect-carefully
 BrowserMatch "^XML Spy" redirect-carefully
 BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
+
+NameVirtualHost *:80
+
+<VirtualHost *:80>
+    ServerAlias {{ ansible_hostname }}
+    DocumentRoot /var/www/shared/
+
+    RewriteEngine on
+    RewriteCond   %{REQUEST_FILENAME} !^/(icons|error)/
+    RewriteRule   ^/(.*?)(/.*)$ http://$1.{{ ansible_hostname }}$2 [R=301,L]
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerAlias *.{{ ansible_hostname }}
+    VirtualDocumentRoot /var/www/shared/%1
+</VirtualHost>

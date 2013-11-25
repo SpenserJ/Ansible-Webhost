@@ -1,6 +1,8 @@
 ---
-- name: Install Apache2 (Debian)
-  action: "{{ packager }} pkg={{ apache2 }} state=latest"
+- name: Install Apache2
+  action: "{{ packager }} pkg={{ apache2 }} state=present"
+- name: Autostart Apache2
+  service: name={{ apache2 }} enabled=yes state=started
 - name: Allow port 80 through IPTables
   lineinfile: dest=/etc/sysconfig/iptables
               regexp='^-A INPUT -p tcp --dport 80 -j ACCEPT$'
@@ -8,3 +10,38 @@
               insertafter='^-A INPUT -i lo -j ACCEPT$'
   notify: restart iptables
   when: ansible_os_family == "RedHat"
+
+- name: Check if /var/www/icons exists
+  stat: path=/var/www/icons
+  register: is_icons_unmoved
+- name: Move /var/www/icons
+  command: "mv /var/www/icons /etc/{{ apache2 }}/icons"
+  when: is_icons_unmoved.stat.exists
+
+- name: Check if /var/www/error exists
+  stat: path=/var/www/error
+  register: is_error_unmoved
+- name: Move /var/www/error
+  command: "mv /var/www/error /etc/{{ apache2 }}/error"
+  when: is_error_unmoved.stat.exists
+
+- name: Check if /var/www/cgi-bin exists
+  stat: path=/var/www/cgi-bin
+  register: is_cgibin_unmoved
+- name: Move /var/www/cgi-bin
+  command: "mv /var/www/cgi-bin /etc/{{ apache2 }}/cgi-bin"
+  when: is_cgibin_unmoved.stat.exists
+
+- name: Check if /var/www/html exists
+  stat: path=/var/www/html
+  register: is_html_unmoved
+- name: Move /var/www/html
+  command: "mv /var/www/html /etc/{{ apache2 }}/html"
+  when: is_html_unmoved.stat.exists
+
+- name: Remove Apache Welcome config
+  file: path=/etc/{{ apache2 }}/conf.d/welcome.conf state=absent
+
+- name: Setup Apache Config
+  template: src=apache2.conf.j2 dest=/etc/{{ apache2 }}/conf/{{ apache2 }}.conf
+  notify: restart apache2
