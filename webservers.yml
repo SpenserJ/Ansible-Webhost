@@ -1,6 +1,8 @@
 ---
 - hosts: webservers
   name: Webserver
+  vars_files:
+  - [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
   roles:
   - apache2
