@@ -8,10 +8,4 @@
   - apache2
   - php
   - mysql
-  tasks:
-  - name: Check for PHPMyAdmin
-    stat: path=/var/www/shared/phpmyadmin
-    register: phpmyadmin_installed
-  - name: Install PHPMyAdmin
-    shell: "mkdir -p /var/www/shared/phpmyadmin;  wget -O- http://downloads.sourceforge.net/phpmyadmin/phpMyAdmin-4.0.9-english.tar.gz?download | tar -zx --strip 1 -C /var/www/shared/phpmyadmin"
-    when: phpmyadmin_installed.stat.exists == false
+  - phpmyadmin
