@@ -4,6 +4,11 @@
               line="PasswordAuthentication no"
               regexp=^#?PasswordAuthentication
   notify: Restart SSHD
+- name: Enable Agent Forwarding
+  lineinfile: dest=/etc/ssh/sshd_config
+              line="AllowAgentForwarding yes"
+              regexp=^#?AllowAgentForwarding
+  notify: Restart SSHD
 - name: Copy SSH Keys
   copy: src={{ item }} dest=/home/{{ dev_user }}/.ssh owner={{ dev_user }} group={{ dev_user }} mode=0600
   with_fileglob:
