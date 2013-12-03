@@ -6,7 +6,7 @@
 - name: Install PHP
   action: "{{ packager }} pkg={{ php }} state=present"
 - name: Install PHP Extensions
-  action: "{{ packager }} pkg={{ php }}-${item} state=present"
+  action: "{{ packager }} pkg={{ php }}-{{ item }} state=present"
   with_items:
   - mbstring
   - mysqli
