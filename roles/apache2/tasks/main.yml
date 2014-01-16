@@ -15,28 +15,28 @@
   stat: path=/var/www/icons
   register: is_icons_unmoved
 - name: Move /var/www/icons
-  command: "mv /var/www/icons /etc/{{ apache2 }}/icons"
+  command: "mv -f /var/www/icons /etc/{{ apache2 }}/icons"
   when: is_icons_unmoved.stat.exists
 
 - name: Check if /var/www/error exists
   stat: path=/var/www/error
   register: is_error_unmoved
 - name: Move /var/www/error
-  command: "mv /var/www/error /etc/{{ apache2 }}/error"
+  command: "mv -f /var/www/error /etc/{{ apache2 }}/error"
   when: is_error_unmoved.stat.exists
 
 - name: Check if /var/www/cgi-bin exists
   stat: path=/var/www/cgi-bin
   register: is_cgibin_unmoved
 - name: Move /var/www/cgi-bin
-  command: "mv /var/www/cgi-bin /etc/{{ apache2 }}/cgi-bin"
+  command: "mv -f /var/www/cgi-bin /etc/{{ apache2 }}/cgi-bin"
   when: is_cgibin_unmoved.stat.exists
 
 - name: Check if /var/www/html exists
   stat: path=/var/www/html
   register: is_html_unmoved
 - name: Move /var/www/html
-  command: "mv /var/www/html /etc/{{ apache2 }}/html"
+  command: "mv -f /var/www/html /etc/{{ apache2 }}/html"
   when: is_html_unmoved.stat.exists
 
 - name: Remove Apache Welcome config
@@ -45,3 +45,17 @@
 - name: Setup Apache Config
   template: src=apache2.conf.j2 dest=/etc/{{ apache2 }}/conf/{{ apache2 }}.conf
   notify: restart apache2
+
+- name: Setup ExtendedStatus
+  copy: src=httpd/conf.d/extendedstatus.conf dest=/etc/httpd/conf.d/extendedstatus.conf
+  notify: restart apache2
+
+- name: Setup LandingPage site
+  unarchive: src=sites/landingpage.tar.gz dest=/var/www/
+
+- name: Add {{ dev_user }} to the users group
+  user: name={{ dev_user }} append=yes groups=users
+- name: Grant g:users access to /var/www/shared
+  command: setfacl -Rm g:users:rwx /var/www/shared
+- name: Grant g:users default access to /var/www/shared
+  command: setfacl -dRm g:users:rwx /var/www/shared
