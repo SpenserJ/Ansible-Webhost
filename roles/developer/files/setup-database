@@ -19,6 +19,11 @@ if [[ "${1}" =~ [^a-z0-9\-_] ]]; then
   exit 1;
 fi
 
+if [ "${#1}" -gt "16" ]; then
+  echo "The database name cannot be longer than 16 characters";
+  exit 1;
+fi
+
 DATABASE_EXISTS=$(mysql -e "SHOW DATABASES;" | grep $1);
 if [ "$DATABASE_EXISTS" != "" ]; then
   if ask "The database ${1} already exists. Would you like to delete it?"; then
