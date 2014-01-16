@@ -1,7 +1,0 @@
-[devs]
-
-[webservers:children]
-devs
-
-[ansible]
-localhost ansible_connection=local
