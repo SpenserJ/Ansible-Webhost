@@ -18,7 +18,11 @@
   - devel
   - gd
   - xml
-  - xml
+  - imap
+  notify:
+  - restart apache2
+- name: Configure php.ini
+  copy: src=php.ini dest=/etc/php.ini
   notify:
   - restart apache2
 - name: Have we installed Drush before
