@@ -53,6 +53,9 @@
 - name: Setup LandingPage site
   unarchive: src=sites/landingpage.tar.gz dest=/var/www/
 
+- name: Create /var/www/shared
+  file: path=/var/www/shared state=directory
+
 - name: Add {{ dev_user }} to the users group
   user: name={{ dev_user }} append=yes groups=users
 - name: Grant g:users access to /var/www/shared
