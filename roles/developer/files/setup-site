@@ -43,6 +43,8 @@ echo "Site Name: ${1}";
 echo "Repository: ${2}";
 echo "Folder: ${DIR}";
 
-git clone $2 $DIR
+git clone --recursive $2 $DIR;
+OLD_DIR=`pwd`;
+cd $DIR && git fetch --all && cd $OLD_DIR;
 echo "";
 setup-database "${1}";
