@@ -9,6 +9,9 @@
               line='DHCP_HOSTNAME={{ dev_hostname }}'
               insertbefore=BOF
 
+- name: Set timezone to America/Edmonton
+  file: path=/etc/localtime src=/usr/share/zoneinfo/America/Edmonton state=link force=yes
+
 - name: Install Git
   action: "{{ packager }} pkg={{ git }} state=latest"
 - name: Install Build Essential (Debian)
