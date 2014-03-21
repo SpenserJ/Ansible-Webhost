@@ -1,4 +1,14 @@
 ---
+- name: Set Hostname for this boot
+  shell: hostname {{ dev_hostname }}
+- name: Set Hostname permanently
+  template: src=hostname.j2 dest=/etc/hostname
+- name: Set Hostname for eth1
+  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth1
+              regexp='^DHCP_HOSTNAME={{ dev_hostname }}'
+              line='DHCP_HOSTNAME={{ dev_hostname }}'
+              insertbefore=BOF
+
 - name: Install Git
   action: "{{ packager }} pkg={{ git }} state=latest"
 - name: Install Build Essential (Debian)

@@ -228,20 +228,20 @@ BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
 NameVirtualHost *:80
 
 <VirtualHost *:80>
-    ServerAlias {{ ansible_hostname }}
+    ServerAlias {{ dev_hostname }}
     DocumentRoot /var/www/landingpage/
 
     RewriteEngine on
-    RewriteRule   ^/(.*?)(/.*)$ http://$1.{{ ansible_hostname }}$2 [R=301,L]
+    RewriteRule   ^/(.*?)(/.*)$ http://$1.{{ dev_hostname }}$2 [R=301,L]
 </VirtualHost>
 
 <VirtualHost *:80>
-    ServerName landingpage.{{ ansible_hostname }}
+    ServerName landingpage.{{ dev_hostname }}
     DocumentRoot /var/www/landingpage/
 </VirtualHost>
 
 <VirtualHost *:80>
-    ServerAlias *.{{ ansible_hostname }}
+    ServerAlias *.{{ dev_hostname }}
     VirtualDocumentRoot /var/www/shared/%1
 
     RewriteEngine on
