@@ -25,17 +25,19 @@ if (strpos($_SERVER['REMOTE_ADDR'], '10.0.0') !== 0) {
     <ul>
 <?php
 $dir = '/var/www/shared/';
+$sites = array();
 if (is_dir($dir)) {
   if ($dh = opendir($dir)) {
     while (($file = readdir($dh)) !== false) {
       if (filetype($dir . $file) === 'dir' && $file !== '.' && $file !== '..') {
-        echo "      <li><a href='http://$file.{$_SERVER['HTTP_HOST']}/'>$file</a></li>\n";
-		    //echo "      <li><a href='http://{$_SERVER['HTTP_HOST']}/$file'>$file</a></li>\n";
+        $sites[$file] = "      <li><a href='http://$file.{$_SERVER['HTTP_HOST']}/'>$file</a></li>";
       }
     }
     closedir($dh);
   }
 }
+ksort($sites);
+echo implode("\n", array_values($sites));
 ?>
     </ul>
 
