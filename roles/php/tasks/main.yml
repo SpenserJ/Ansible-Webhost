@@ -25,6 +25,10 @@
   copy: src=php.ini dest=/etc/php.ini
   notify:
   - restart apache2
+- name: Configure xdebug.ini
+  copy: src=xdebug.ini dest=/etc/php.d/xdebug.ini
+  notify:
+  - restart apache2
 - name: Have we installed Drush before
   stat: path=/usr/share/pear/.channels/pear.drush.org.reg
   register: installed_drush
