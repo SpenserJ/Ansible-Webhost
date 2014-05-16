@@ -1,1 +1,2 @@
 packager: yum 
+devs: [ 'johan', 'mike', 'ben', 'spenser', 'chad' ]

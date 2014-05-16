@@ -9,17 +9,15 @@
               line="AllowAgentForwarding yes"
               regexp=^#?AllowAgentForwarding
   notify: Restart SSHD
+- name: Create the admin group
+  group: name='admin'
+- name: Setup the admin group with nopasswd sudo
+  lineinfile: dest=/etc/sudoers
+              regexp='^%admin'
+              line='%admin ALL=(ALL) NOPASSWD:ALL'
+- name: Create the user account
+  user: name={{ item }} append=yes groups='admin'
+  with_items: devs
 - name: Copy SSH Keys
-  copy: src={{ item }} dest=/home/{{ dev_user }}/.ssh owner={{ dev_user }} group={{ dev_user }} mode=0600
-  with_fileglob:
-  - .ssh/{{ dev_user }}/*
-  register: copied_keys
-- name: Does authorized_keys contain id_rsa.pub
-  shell: "grep \"$(cat /home/{{ dev_user }}/.ssh/id_rsa.pub)\" /home/{{ dev_user }}/.ssh/authorized_keys && echo 'true' || echo 'false'"
-  register: public_key_authorized
-- name: Insert public key into authorized keys
-  shell: "cat /home/{{ dev_user }}/.ssh/id_rsa.pub >> /home/{{ dev_user }}/.ssh/authorized_keys"
-  when: public_key_authorized.stdout == "false"
-- name: Ensure correct ~/.ssh permissions
-  file: path=/home/{{ dev_user }}/.ssh owner={{ dev_user }} group={{ dev_user }} mode=0700
-  file: path=/home/{{ dev_user }}/.ssh/authorized_keys owner={{ dev_user }} group={{ dev_user }} mode=0600
+  authorized_key: user={{ item }} key="{{ lookup('file', '.ssh/' + item + '/id_rsa.pub') }}"
+  with_items: devs

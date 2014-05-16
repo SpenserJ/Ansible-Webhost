@@ -25,14 +25,6 @@
                     key="{{ lookup('file', '/home/ansible-bootstrap/.ssh/spenser.pub')  }}"
                     path='/etc/skel/.ssh/authorized_keys'
                     manage_dir=no
-  - name: Create the user account
-    user: name={{ username }} password={{ password }} shell=/bin/bash
-  - name: Create Administrator's account
-    user: name=spenser append=yes shell=/bin/bash
-  - name: Setup Administrator as a Sudoer
-    lineinfile: dest=/etc/sudoers
-                regexp='/^spenser\s/'
-                line='spenser ALL=(ALL) NOPASSWD:ALL'
   handlers:
   - name: restart networking
     service: name=networking state=restarted
