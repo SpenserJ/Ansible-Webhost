@@ -1,2 +1,3 @@
+.vagrant/
 hosts
 roles/ssh/files/.ssh
