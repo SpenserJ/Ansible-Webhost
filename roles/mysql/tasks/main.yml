@@ -2,23 +2,23 @@
 - name: Install MySQL
   action: "{{ packager }} pkg=mysql-server state=present"
 - name: Run MySQL on boot
-  service: name=mysqld enabled=yes state=started
+  service: name={{ mysql_service }} enabled=yes state=started
 - name: Set MySQL Max Packet Size
-  lineinfile: dest=/etc/my.cnf
+  lineinfile: dest={{ mysql_config_path }}
               line="max_allowed_packet=16M"
               regexp=^max_allowed_packet
               insertafter=^\\[mysqld\\]$
   notify: Restart MySQL
 - name: Install MySQL-python
-  action: "{{ packager }} pkg=MySQL-python state=present"
+  action: "{{ packager }} pkg={{ mysql_python }} state=present"
 - name: Check for ~/my.cnf
-  stat: path=/home/spenser/.my.cnf
+  stat: path=/home/{{ ansible_ssh_user }}/.my.cnf
   register: mycnf
 - name: Copy ~/my.cnf
-  template: src=my.cnf dest=/home/spenser/.my.cnf owner=spenser mode=0600
+  template: src=my.cnf dest=/home/{{ ansible_ssh_user }}/.my.cnf owner={{ ansible_ssh_user }} mode=0600
   when: mycnf.stat.exists == false
 - name: Reset ~/my.cnf's root password on install
-  lineinfile: dest=/home/spenser/.my.cnf regexp='^password='  line="password="
+  lineinfile: dest=/home/{{ ansible_ssh_user }}/.my.cnf regexp='^password='  line="password="
   when: mycnf.stat.exists == false
 - name: Set MySQL Root
   mysql_user: name=root host="{{ item }}" password={{ mysql_root_password }} priv=*.*:ALL,GRANT
@@ -28,11 +28,12 @@
   - ::1
   - localhost
 - name: Copy ~/my.cnf to Administrator
-  template: src=my.cnf dest=/home/spenser/.my.cnf owner=spenser group=spenser mode=0600
+  template: src=my.cnf dest=/home/{{ ansible_ssh_user }}/.my.cnf owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} mode=0601
 - name: Copy ~/my.cnf to root
   template: src=my.cnf dest=/root/.my.cnf owner=root group=root mode=0600
 - name: Copy ~/my.cnf to user
   template: src=my.cnf dest=/home/{{ dev_user }}/.my.cnf owner={{ dev_user }} group={{ dev_user }} mode=0600
+  when: groups['developer'] is defined
 - name: Delete anonymous MySQL server user for $server_hostname
   action: mysql_user user="" host="{{ item }}" state="absent"
   with_items:
