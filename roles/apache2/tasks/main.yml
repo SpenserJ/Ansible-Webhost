@@ -1,8 +1,8 @@
 ---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
 - name: Install Apache2
   action: "{{ packager }} pkg={{ apache2 }} state=present"
-- name: Autostart Apache2
-  service: name={{ apache2 }} enabled=yes state=started
 - name: Allow port 80 through IPTables
   lineinfile: dest=/etc/sysconfig/iptables
               regexp='^-A INPUT -p tcp --dport 80 -j ACCEPT$'
@@ -40,14 +40,14 @@
   when: is_html_unmoved.stat.exists
 
 - name: Remove Apache Welcome config
-  file: path=/etc/{{ apache2 }}/conf.d/welcome.conf state=absent
+  file: path={{ apache2_conf_folder }}/welcome.conf state=absent
 
 - name: Setup Apache Config
-  template: src=apache2.conf.j2 dest=/etc/{{ apache2 }}/conf/{{ apache2 }}.conf
+  template: src=apache2.conf.j2 dest={{ apache2_conf_path }}
   notify: restart apache2
 
 - name: Setup ExtendedStatus
-  copy: src=httpd/conf.d/extendedstatus.conf dest=/etc/httpd/conf.d/extendedstatus.conf
+  copy: src=httpd/conf.d/extendedstatus.conf dest={{ apache2_conf_folder }}/extendedstatus.conf
   notify: restart apache2
 
 - name: Setup LandingPage site
@@ -58,7 +58,11 @@
 
 - name: Add {{ dev_user }} to the users group
   user: name={{ dev_user }} append=yes groups=users
+  when: groups['developer'] is defined
 - name: Grant g:users access to /var/www/shared
   command: setfacl -Rm g:users:rwx /var/www/shared
 - name: Grant g:users default access to /var/www/shared
   command: setfacl -dRm g:users:rwx /var/www/shared
+
+- name: Autostart Apache2
+  service: name={{ apache2 }} enabled=yes state=started

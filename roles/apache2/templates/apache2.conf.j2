@@ -3,8 +3,8 @@ EnableMMAP off
 EnableSendfile off
 
 ServerTokens OS
-ServerRoot "/etc/httpd"
-PidFile run/httpd.pid
+ServerRoot "{{ apache2_base }}"
+PidFile {{ apache_pid }}
 Timeout 90
 KeepAlive On
 MaxKeepAliveRequests 100
@@ -19,64 +19,59 @@ KeepAliveTimeout 15
   MaxRequestsPerChild  501
 </IfModule>
 
+<IfModule mpm_event_module>
+  StartServers       5
+  MinSpareThreads    25
+  MaxSpareThreads   75
+  ThreadLimit      64
+  ThreadsPerChild  25
+  MaxRequestWorkers 150
+  MaxConnectionsPerChild 501
+</IfModule>
+
 Listen 80
 
-LoadModule auth_basic_module modules/mod_auth_basic.so
-#LoadModule auth_digest_module modules/mod_auth_digest.so
-LoadModule authn_file_module modules/mod_authn_file.so
-#LoadModule authn_alias_module modules/mod_authn_alias.so
-#LoadModule authn_anon_module modules/mod_authn_anon.so
-#LoadModule authn_dbm_module modules/mod_authn_dbm.so
-LoadModule authn_default_module modules/mod_authn_default.so
-LoadModule authz_host_module modules/mod_authz_host.so
-LoadModule authz_user_module modules/mod_authz_user.so
-#LoadModule authz_owner_module modules/mod_authz_owner.so
-#LoadModule authz_groupfile_module modules/mod_authz_groupfile.so
-#LoadModule authz_dbm_module modules/mod_authz_dbm.so
-LoadModule authz_default_module modules/mod_authz_default.so
-#LoadModule ldap_module modules/mod_ldap.so
-#LoadModule authnz_ldap_module modules/mod_authnz_ldap.so
-LoadModule include_module modules/mod_include.so
-LoadModule log_config_module modules/mod_log_config.so
-LoadModule logio_module modules/mod_logio.so
-LoadModule env_module modules/mod_env.so
-LoadModule ext_filter_module modules/mod_ext_filter.so
-LoadModule mime_magic_module modules/mod_mime_magic.so
-LoadModule expires_module modules/mod_expires.so
-LoadModule deflate_module modules/mod_deflate.so
-LoadModule headers_module modules/mod_headers.so
-#LoadModule usertrack_module modules/mod_usertrack.so
-LoadModule setenvif_module modules/mod_setenvif.so
-LoadModule mime_module modules/mod_mime.so
-#LoadModule dav_module modules/mod_dav.so
-LoadModule status_module modules/mod_status.so
-#LoadModule autoindex_module modules/mod_autoindex.so
-LoadModule info_module modules/mod_info.so
-#LoadModule dav_fs_module modules/mod_dav_fs.so
-LoadModule vhost_alias_module modules/mod_vhost_alias.so
-LoadModule negotiation_module modules/mod_negotiation.so
-LoadModule dir_module modules/mod_dir.so
-#LoadModule actions_module modules/mod_actions.so
-#LoadModule speling_module modules/mod_speling.so
-#LoadModule userdir_module modules/mod_userdir.so
-LoadModule alias_module modules/mod_alias.so
-#LoadModule substitute_module modules/mod_substitute.so
-LoadModule rewrite_module modules/mod_rewrite.so
-#LoadModule proxy_module modules/mod_proxy.so
-#LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
-#LoadModule proxy_ftp_module modules/mod_proxy_ftp.so
-#LoadModule proxy_http_module modules/mod_proxy_http.so
-#LoadModule proxy_ajp_module modules/mod_proxy_ajp.so
-#LoadModule proxy_connect_module modules/mod_proxy_connect.so
-#LoadModule cache_module modules/mod_cache.so
-#LoadModule suexec_module modules/mod_suexec.so
-#LoadModule disk_cache_module modules/mod_disk_cache.so
-#LoadModule cgi_module modules/mod_cgi.so
-#LoadModule version_module modules/mod_version.so
+LoadModule auth_basic_module {{ module_folder }}/mod_auth_basic.so
+LoadModule authn_file_module {{ module_folder }}/mod_authn_file.so
+LoadModule authn_dbm_module {{ module_folder }}/mod_authn_dbm.so
+LoadModule authz_core_module {{ module_folder }}/mod_authz_core.so
+LoadModule authz_host_module {{ module_folder }}/mod_authz_host.so
+LoadModule authz_user_module {{ module_folder }}/mod_authz_user.so
+LoadModule include_module {{ module_folder }}/mod_include.so
+LoadModule env_module {{ module_folder }}/mod_env.so
+LoadModule ext_filter_module {{ module_folder }}/mod_ext_filter.so
+LoadModule mime_magic_module {{ module_folder }}/mod_mime_magic.so
+LoadModule expires_module {{ module_folder }}/mod_expires.so
+LoadModule deflate_module {{ module_folder }}/mod_deflate.so
+LoadModule headers_module {{ module_folder }}/mod_headers.so
+LoadModule setenvif_module {{ module_folder }}/mod_setenvif.so
+LoadModule mime_module {{ module_folder }}/mod_mime.so
+LoadModule status_module {{ module_folder }}/mod_status.so
+LoadModule info_module {{ module_folder }}/mod_info.so
+LoadModule vhost_alias_module {{ module_folder }}/mod_vhost_alias.so
+LoadModule negotiation_module {{ module_folder }}/mod_negotiation.so
+LoadModule dir_module {{ module_folder }}/mod_dir.so
+LoadModule alias_module {{ module_folder }}/mod_alias.so
+LoadModule rewrite_module {{ module_folder }}/mod_rewrite.so
 
+{% if ansible_os_family == 'RedHat' %}
+LoadModule authn_default_module {{ module_folder }}/mod_authn_default.so
+LoadModule authz_default_module {{ module_folder }}/mod_authz_default.so
+LoadModule log_config_module {{ module_folder }}/mod_log_config.so
+LoadModule logio_module {{ module_folder }}/mod_logio.so
+{% else %}
+LoadModule mpm_event_module {{ module_folder }}/mod_mpm_event.so
+LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
+{% endif %}
+
+{% if ansible_os_family == 'RedHat' %}
 Include conf.d/*.conf
-User apache
-Group apache
+{% else %}
+Include conf-enabled/*.conf
+{% endif %}
+
+User  {{ apache_user }}
+Group {{ apache_user }}
 ServerAdmin root@localhost
 UseCanonicalName Off
 DocumentRoot "/var/www/landingpage"
@@ -84,35 +79,44 @@ DocumentRoot "/var/www/landingpage"
 <Directory "/var/www">
     Options +FollowSymLinks
     AllowOverride All
+{% if ansible_os_family == 'RedHat' %}
     Order allow,deny
     Allow from all
+{% else %}
+    Require all granted
+{% endif %}
 </Directory>
 
 DirectoryIndex index.html index.html.var
 
 AccessFileName .htaccess
 <Files ~ "^\.ht">
+{% if ansible_os_family == 'RedHat' %}
     Order allow,deny
     Deny from all
     Satisfy All
+{% else %}
+    Require all denied
+{% endif %}
 </Files>
 
 TypesConfig /etc/mime.types
-DefaultType text/plain
 
+{% if ansible_os_family == 'RedHat' %}
 <IfModule mod_mime_magic.c>
     MIMEMagicFile conf/magic
 </IfModule>
+{% endif %}
 
 HostnameLookups Off
-ErrorLog logs/error_log
+ErrorLog /var/log/{{ apache2 }}/error_log
 LogLevel warn
 LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 LogFormat "%v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined_vhost
 LogFormat "%h %l %u %t \"%r\" %>s %b" common
 LogFormat "%{Referer}i -> %U" referer
 LogFormat "%{User-agent}i" agent
-CustomLog logs/access_log combined
+CustomLog /var/log/{{ apache2 }}/access_log combined
 
 ServerSignature On
 
@@ -120,45 +124,18 @@ Alias /icons/ "/etc/httpd/icons/"
 <Directory "/etc/httpd/icons">
     Options -FollowSymLinks
     AllowOverride None
+{% if ansible_os_family == 'RedHat' %}
     Order allow,deny
     Allow from all
+{% else %}
+    Require all granted
+{% endif %}
 </Directory>
 
 <IfModule mod_dav_fs.c>
     DAVLockDB /var/lib/dav/lockdb
 </IfModule>
 
-# Enable the autoindex module for this
-#IndexOptions FancyIndexing VersionSort NameWidth=* HTMLTable Charset=UTF-8
-#AddIconByEncoding (CMP,/icons/compressed.gif) x-compress x-gzip
-#AddIconByType (TXT,/icons/text.gif) text/*
-#AddIconByType (IMG,/icons/image2.gif) image/*
-#AddIconByType (SND,/icons/sound2.gif) audio/*
-#AddIconByType (VID,/icons/movie.gif) video/*
-#AddIcon /icons/binary.gif .bin .exe
-#AddIcon /icons/binhex.gif .hqx
-#AddIcon /icons/tar.gif .tar
-#AddIcon /icons/world2.gif .wrl .wrl.gz .vrml .vrm .iv
-#AddIcon /icons/compressed.gif .Z .z .tgz .gz .zip
-#AddIcon /icons/a.gif .ps .ai .eps
-#AddIcon /icons/layout.gif .html .shtml .htm .pdf
-#AddIcon /icons/text.gif .txt
-#AddIcon /icons/c.gif .c
-#AddIcon /icons/p.gif .pl .py
-#AddIcon /icons/f.gif .for
-#AddIcon /icons/dvi.gif .dvi
-#AddIcon /icons/uuencoded.gif .uu
-#AddIcon /icons/script.gif .conf .sh .shar .csh .ksh .tcl
-#AddIcon /icons/tex.gif .tex
-#AddIcon /icons/bomb.gif core
-#AddIcon /icons/back.gif ..
-#AddIcon /icons/hand.right.gif README
-#AddIcon /icons/folder.gif ^^DIRECTORY^^
-#AddIcon /icons/blank.gif ^^BLANKICON^^
-#DefaultIcon /icons/unknown.gif
-#ReadmeName README.html
-#HeaderName HEADER.html
-#IndexIgnore .??* *~ *# HEADER* README* RCS CVS *,v *,t
 AddLanguage ca .ca
 AddLanguage cs .cz .cs
 AddLanguage da .dk
@@ -204,8 +181,12 @@ Alias /error/ "/etc/httpd/error/"
             Options IncludesNoExec
             AddOutputFilter Includes html
             AddHandler type-map var
+{% if ansible_os_family == 'RedHat' %}
             Order allow,deny
             Allow from all
+{% else %}
+            Require all granted
+{% endif %}
             LanguagePriority en es de fr
             ForceLanguagePriority Prefer Fallback
         </Directory>
@@ -225,23 +206,23 @@ BrowserMatch "^gnome-vfs/1.0" redirect-carefully
 BrowserMatch "^XML Spy" redirect-carefully
 BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
 
-NameVirtualHost *:80
+#NameVirtualHost *:80
 
 <VirtualHost *:80>
-    ServerAlias {{ dev_hostname }}
+    ServerAlias {{ hostname }}
     DocumentRoot /var/www/landingpage/
 
     RewriteEngine on
-    RewriteRule   ^/(.*?)(/.*)$ http://$1.{{ dev_hostname }}$2 [R=301,L]
+    RewriteRule   ^/(.*?)(/.*)$ http://$1.{{ hostname }}$2 [R=301,L]
 </VirtualHost>
 
 <VirtualHost *:80>
-    ServerName landingpage.{{ dev_hostname }}
+    ServerName landingpage.{{ hostname }}
     DocumentRoot /var/www/landingpage/
 </VirtualHost>
 
 <VirtualHost *:80>
-    ServerAlias *.{{ dev_hostname }}
+    ServerAlias *.{{ hostname }}
     VirtualDocumentRoot /var/www/shared/%1
 
     RewriteEngine on
@@ -250,14 +231,24 @@ NameVirtualHost *:80
 
 <Location /server-status>
   SetHandler server-status
-  Order deny,allow
-  Deny from all
-  Allow from 127. 10.0.0.
+{% if ansible_os_family == 'RedHat' %}
+    Order allow,deny
+    Deny from all
+    Allow from 127. 10.0.0.
+{% else %}
+    Require ip 127. 10.0.0.
+    Require all denied
+{% endif %}
 </Location>
 
 <Location /server-info>
   SetHandler server-info
-  Order deny,allow
-  Deny from all
-  Allow from 127. 10.0.0.
+{% if ansible_os_family == 'RedHat' %}
+    Order allow,deny
+    Deny from all
+    Allow from 127. 10.0.0.
+{% else %}
+    Require ip 127. 10.0.0.
+    Require all denied
+{% endif %}
 </Location>

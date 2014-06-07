@@ -1,4 +1,0 @@
-apache2: apache2
-when: ansible_os_family == "Debian"
-apache2: httpd
-when: ansible_os_family == "RedHat"
