@@ -1,0 +1,4 @@
+php: php
+php_xdebug: php-pecl-xdebug
+php_dev: php_devel
+apache2: httpd

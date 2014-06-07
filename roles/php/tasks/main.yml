@@ -1,26 +1,42 @@
 ---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
+
 - name: Get EPEL repository
   get_url: dest=/tmp/epel-release.rpm  url=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  when: ansible_os_family == "RedHat"
 - name: Install EPEL repository
   yum: pkg=/tmp/epel-release.rpm state=installed
+  when: ansible_os_family == "RedHat"
+
+- name: Get PHP PPA
+  apt_repository: repo="ppa:ondrej/php5"
+  when: ansible_os_family == "Debian"
+
 - name: Install PHP
   action: "{{ packager }} pkg={{ php }} state=present"
 - name: Install PHP Extensions
+  action: "{{ packager }} pkg={{ item }} state=present"
+  with_items:
+  - "{{ php }}-mcrypt"
+  - "{{ php }}-xhprof"
+  - "{{ php }}-gd"
+  - "{{ php }}-imap"
+  - "{{ php_dev }}"
+  - "{{ php_xdebug }}"
+  - php-pear
+  notify:
+  - restart apache2
+
+- name: Install PHP 5.3 Extensions
   action: "{{ packager }} pkg={{ php }}-{{ item }} state=present"
   with_items:
   - mbstring
   - mysqli
   - pdo
-  - mcrypt
-  - pecl-xdebug
-  - xhprof
-  - pear
-  - devel
-  - gd
   - xml
-  - imap
-  notify:
-  - restart apache2
+  when: ansible_os_family == "RedHat"
+
 - name: Configure php.ini
   copy: src=php.ini dest=/etc/php.ini
   notify:

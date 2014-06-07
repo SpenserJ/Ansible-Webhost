@@ -1,0 +1,4 @@
+php: php5
+php_xdebug: php5-xdebug
+php_dev: php5-dev
+apache2: apache2
