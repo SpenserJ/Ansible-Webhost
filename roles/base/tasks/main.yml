@@ -2,6 +2,9 @@
 - name: Install ACL
   apt: pkg=acl state=present
   when: ansible_os_family == 'Debian'
+- name: Install PyCurl
+  apt: pkg=python-pycurl state=present
+  when: ansible_os_family == 'Debian'
 
 - name: Set Hostname for this boot
   shell: hostname {{ hostname }}

@@ -42,7 +42,7 @@
   notify:
   - restart apache2
 - name: Configure xdebug.ini
-  copy: src=xdebug.ini dest=/etc/php.d/xdebug.ini
+  copy: src=xdebug.ini dest={{ php_mod_config }}/xdebug.ini
   notify:
   - restart apache2
 - name: Have we installed Drush before
