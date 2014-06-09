@@ -64,11 +64,8 @@ LoadModule mpm_event_module {{ module_folder }}/mod_mpm_event.so
 LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
 {% endif %}
 
-{% if ansible_os_family == 'RedHat' %}
-Include conf.d/*.conf
-{% else %}
-Include conf-enabled/*.conf
-{% endif %}
+Include {{ apache2_conf_folder }}/*.conf
+Include {{ apache2_conf_folder }}/*.load
 
 User  {{ apache_user }}
 Group {{ apache_user }}

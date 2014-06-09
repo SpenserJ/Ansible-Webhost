@@ -1,4 +1,7 @@
 ---
+- name: Install KeyCzar
+  apt: pkg=python-keyczar state=present
+  when: ansible_os_family == 'Debian'
 - name: Install ACL
   apt: pkg=acl state=present
   when: ansible_os_family == 'Debian'

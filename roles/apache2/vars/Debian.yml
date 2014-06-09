@@ -1,7 +1,7 @@
 apache2: apache2
 apache2_base: /etc/apache2
 apache2_conf_path: "{{ apache2_base }}/apache2.conf"
-apache2_conf_folder: "{{ apache2_base }}/conf-enabled/"
+apache2_conf_folder: "{{ apache2_base }}/conf-enabled"
 module_folder: /usr/lib/apache2/modules
 apache_user: www-data
 apache_pid: /var/run/apache2/apache2.pid

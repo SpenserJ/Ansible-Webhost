@@ -1,5 +1,5 @@
 php: php5
 php_xdebug: php5-xdebug
 php_dev: php5-dev
-php_mod_config: /etc/php5/conf.d
+php_mod_config: /etc/php5/apache2/conf.d
 apache2: apache2
