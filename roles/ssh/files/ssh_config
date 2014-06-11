@@ -1,0 +1,10 @@
+Host *
+  GSSAPIAuthentication yes
+  GSSAPIDelegateCredentials no
+  ForwardX11Trusted yes
+  SendEnv LANG LC_*
+  SendEnv XMODIFIERS
+  HashKnownHosts yes
+
+Host *.dev
+  ForwardAgent yes

@@ -21,3 +21,5 @@
 - name: Copy SSH Keys
   authorized_key: user={{ item }} key="{{ lookup('file', '.ssh/' + item + '/id_rsa.pub') }}"
   with_items: devs
+- name: Configure SSH to ForwardAgent when connecting to another devbox
+  copy: src=ssh_config dest=/etc/ssh/ssh_config
