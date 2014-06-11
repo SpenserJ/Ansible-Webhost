@@ -13,7 +13,7 @@
 
 - name: Clone Git
   git: repo="{{ item.git.repo }}"
-       version="{{ item.git.branch }}"
+       version="{{ item.git.branch | default('master') }}"
        dest="/var/www/{{ item.domain }}/public_html"
        accept_hostkey=yes
   when: item.git is defined
