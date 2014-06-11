@@ -10,7 +10,8 @@
   roles:
   - apache2
   - php
-# - phpmyadmin
+  - phpmyadmin
+  - websites
 
 - hosts: database
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]

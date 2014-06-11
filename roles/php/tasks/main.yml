@@ -47,14 +47,8 @@
   copy: src=xdebug.ini dest={{ php_mod_config }}/xdebug.ini
   notify:
   - restart apache2
-- name: Enable PHP module in Apache
-  lineinfile: dest="{{ apache2_conf_path }}"
-              line="LoadModule php5_module {{ module_folder }}/libphp5.so"
-              insertafter="^# Additional configs and modules$"
-  notify:
-  - restart apache2
 - name: Enable PHP configuration in Apache
-  copy: src=php5.conf dest="{{ apache2_conf_folder }}/php5.conf"
+  template: src=php5.conf.j2 dest="{{ apache2_conf_folder }}/php5.conf"
   notify:
   - restart apache2
 

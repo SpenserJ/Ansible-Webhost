@@ -1,3 +1,5 @@
+LoadModule php5_module {{ module_folder  }}/libphp5.so
+
 <FilesMatch ".+\.ph(p[345]?|t|tml)$">
     SetHandler application/x-httpd-php
 </FilesMatch>

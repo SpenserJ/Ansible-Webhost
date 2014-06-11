@@ -1,0 +1,17 @@
+---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
+- name: Load Apache role's vars for this distro
+  include_vars: "roles/apache2/vars/{{ ansible_os_family }}.yml"
+
+- name: Ensure the logs folder exists for all sites
+  file: path="/var/www/{{ item.domain }}/logs" state=directory
+  with_items: websites
+- name: Ensure the public_html folder exists for all sites
+  file: path="/var/www/{{ item.domain }}/public_html" state=directory
+  with_items: websites
+
+- name: Enable sites folder in Apache
+  template: src=sites.conf.j2 dest="{{ apache2_conf_folder }}/sites.conf"
+  notify:
+  - restart apache2

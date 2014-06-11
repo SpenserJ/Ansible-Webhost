@@ -1,0 +1,7 @@
+{% for site in websites %}
+<VirtualHost *:80>
+  ServerAlias {{ site.domain }}
+  DocumentRoot /var/www/{{ site.domain }}/public_html
+</VirtualHost>
+
+{% endfor %}

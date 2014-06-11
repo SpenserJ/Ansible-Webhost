@@ -1,3 +1,4 @@
 .vagrant/
 hosts
 roles/ssh/files/.ssh
+host_vars
