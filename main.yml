@@ -7,7 +7,6 @@
 - hosts: webserver
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
-  accelerate: true
   roles:
   - apache2
   - php
@@ -16,14 +15,12 @@
 - hosts: database
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
-  accelerate: true
   roles:
   - mysql
 
 - hosts: developer
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
-  accelerate: true
   roles:
   - developer
   - node
