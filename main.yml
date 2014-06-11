@@ -26,4 +26,5 @@
   accelerate: true
   roles:
   - developer
+  - node
   - ssh
