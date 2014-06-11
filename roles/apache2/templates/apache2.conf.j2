@@ -194,8 +194,7 @@ BrowserMatch "^gnome-vfs/1.0" redirect-carefully
 BrowserMatch "^XML Spy" redirect-carefully
 BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
 
-#NameVirtualHost *:80
-
+{% if 'developer' in group_names %}
 <VirtualHost *:80>
     ServerAlias {{ hostname }}
     DocumentRoot /var/www/landingpage/
@@ -240,3 +239,4 @@ BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
     Require all denied
 {% endif %}
 </Location>
+{% endif %}
