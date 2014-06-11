@@ -1,4 +1,0 @@
-git: git-core
-when: ansible_os_family == "Debian"
-git: git
-when: ansible_os_family == "RedHat"

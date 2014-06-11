@@ -1,4 +1,6 @@
 ---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
 - name: Disable Password Authentication
   lineinfile: dest=/etc/ssh/sshd_config
               line="PasswordAuthentication no"
