@@ -24,6 +24,7 @@
   - "{{ php }}-imap"
   - "{{ php_dev }}"
   - "{{ php_xdebug }}"
+  - "{{ php_mysql }}"
   - php-pear
   notify:
   - restart apache2
@@ -32,7 +33,6 @@
   action: "{{ packager }} pkg={{ php }}-{{ item }} state=present"
   with_items:
   - mbstring
-  - mysqli
   - pdo
   - xml
   when: ansible_os_family == "RedHat"
@@ -46,7 +46,7 @@
   notify:
   - restart apache2
 - name: Have we installed Drush before
-  stat: path=/usr/share/pear/.channels/pear.drush.org.reg
+  stat: path="{{ pear_folder }}/.channels/pear.drush.org.reg"
   register: installed_drush
 - name: Discover Drush Channel
   command: pear channel-discover pear.drush.org
