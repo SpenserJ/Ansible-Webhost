@@ -2,7 +2,7 @@
 - name: Load vars for this distro
   include_vars: "{{ ansible_os_family }}.yml"
 - name: Install Git
-  action: "{{ packager }} pkg={{ git }} state=latest"
+  action: "{{ packager }} pkg={{ git }} state=present"
 - name: Install Build Essential (Debian)
   action: "{{ packager }} pkg='{{ build_essential }}' state=present"
   when: ansible_os_family == "Debian"
@@ -10,9 +10,9 @@
   apt: pkg=vim state=present
   when: ansible_os_family == "Debian"
 - name: Install GraphViz
-  action: "{{ packager }} pkg=graphviz state=latest"
+  action: "{{ packager }} pkg=graphviz state=present"
 - name: Install Man
-  action: "{{ packager }} pkg=man state=latest"
+  action: "{{ packager }} pkg=man state=present"
 - name: Copy setup-site Application
   copy: src=setup-site dest=/usr/bin/setup-site owner=root group=root mode=0755
 - name: Copy setup-database Application
