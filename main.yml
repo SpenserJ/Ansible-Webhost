@@ -3,6 +3,7 @@
   sudo: True
   roles:
   - base
+  - git
 
 - hosts: webserver
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
