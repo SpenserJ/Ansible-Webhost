@@ -1,4 +1,4 @@
-{% for site in websites %}
+{% for site in websites + default_websites %}
 <VirtualHost *:80>
   ServerAlias {{ site.domain }}
   DocumentRoot /var/www/{{ site.domain }}/public_html

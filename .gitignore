@@ -2,3 +2,4 @@
 hosts
 roles/ssh/files/.ssh
 host_vars
+group_vars
