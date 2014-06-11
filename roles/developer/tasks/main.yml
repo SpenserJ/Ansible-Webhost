@@ -19,3 +19,6 @@
   copy: src=setup-database dest=/usr/bin/setup-database owner=root group=root mode=0755
 - name: Copy setup-xdebug Application
   copy: src=setup-xdebug dest=/usr/bin/setup-xdebug owner=root group=root mode=0755
+#- name: Add {{ dev_user }} to the users group
+#  user: name={{ dev_user }} append=yes groups=users
+#  when: groups['developer'] is defined

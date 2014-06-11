@@ -25,3 +25,6 @@
 
 - name: Set timezone to America/Edmonton
   file: path=/etc/localtime src=/usr/share/zoneinfo/America/Edmonton state=link force=yes
+
+- name: Ensure the admin group exists
+  group: name=admin

@@ -56,13 +56,10 @@
 - name: Create /var/www/shared
   file: path=/var/www/shared state=directory
 
-- name: Add {{ dev_user }} to the users group
-  user: name={{ dev_user }} append=yes groups=users
-  when: groups['developer'] is defined
-- name: Grant g:users access to /var/www/shared
-  command: setfacl -Rm g:users:rwx /var/www/shared
-- name: Grant g:users default access to /var/www/shared
-  command: setfacl -dRm g:users:rwx /var/www/shared
+- name: Grant g:admin access to /var/www/shared
+  command: setfacl -Rm g:admin:rwx /var/www/shared
+- name: Grant g:admin default access to /var/www/shared
+  command: setfacl -dRm g:admin:rwx /var/www/shared
 
 - name: Autostart Apache2
   service: name={{ apache2 }} enabled=yes state=started
