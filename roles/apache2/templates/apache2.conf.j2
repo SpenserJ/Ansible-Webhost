@@ -46,7 +46,8 @@ LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
 {% endif %}
 
 Include {{ apache2_conf_folder }}/*.conf
-Include {{ apache2_conf_folder }}/*.load
+
+# Additional configs and modules
 
 <IfModule prefork.c>
   StartServers       5

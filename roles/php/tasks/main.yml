@@ -1,6 +1,8 @@
 ---
 - name: Load vars for this distro
   include_vars: "{{ ansible_os_family }}.yml"
+- name: Load Apache role's vars for this distro
+  include_vars: "roles/apache2/vars/{{ ansible_os_family }}.yml"
 
 - name: Get EPEL repository
   get_url: dest=/tmp/epel-release.rpm  url=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
@@ -45,6 +47,17 @@
   copy: src=xdebug.ini dest={{ php_mod_config }}/xdebug.ini
   notify:
   - restart apache2
+- name: Enable PHP module in Apache
+  lineinfile: dest="{{ apache2_conf_path }}"
+              line="LoadModule php5_module {{ module_folder }}/libphp5.so"
+              insertafter="^# Additional configs and modules$"
+  notify:
+  - restart apache2
+- name: Enable PHP configuration in Apache
+  copy: src=php5.conf dest="{{ apache2_conf_folder }}/php5.conf"
+  notify:
+  - restart apache2
+
 - name: Have we installed Drush before
   stat: path="{{ pear_folder }}/.channels/pear.drush.org.reg"
   register: installed_drush
