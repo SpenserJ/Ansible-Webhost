@@ -3,6 +3,7 @@
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
   roles:
+  - firewall
   - base
   - git
 
@@ -13,6 +14,7 @@
   - apache2
   - php
   - phpmyadmin
+  - node
 
 - hosts: webserver
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
@@ -30,12 +32,4 @@
   sudo: True
   roles:
   - developer
-  - node
   - ssh
-
-# Set up a firewall on the server
-- hosts: all
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
-  sudo: True
-  roles:
-  - firewall

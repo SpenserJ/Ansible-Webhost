@@ -3,13 +3,6 @@
   include_vars: "{{ ansible_os_family }}.yml"
 - name: Install Apache2
   action: "{{ packager }} pkg={{ apache2 }} state=present"
-- name: Allow port 80 through IPTables
-  lineinfile: dest=/etc/sysconfig/iptables
-              regexp='^-A INPUT -p tcp --dport 80 -j ACCEPT$'
-              line='-A INPUT -p tcp --dport 80 -j ACCEPT'
-              insertafter='^-A INPUT -i lo -j ACCEPT$'
-  notify: restart iptables
-  when: ansible_os_family == "RedHat"
 
 - name: Remove unused paths
   file: state="absent" path="{{ item }}"
@@ -47,3 +40,9 @@
 
 - name: Autostart Apache2
   service: name={{ apache2 }} enabled=yes state=started
+
+- name: Allow Port 80 and 443 through the firewall
+  ufw: rule=allow port={{ item }}
+  with_items:
+  - 80
+  - 443
