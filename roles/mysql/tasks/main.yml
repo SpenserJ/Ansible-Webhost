@@ -31,9 +31,11 @@
   template: src=my.cnf dest=/home/{{ ansible_ssh_user }}/.my.cnf owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} mode=0601
 - name: Copy ~/my.cnf to root
   template: src=my.cnf dest=/root/.my.cnf owner=root group=root mode=0600
+
 - name: Copy ~/my.cnf to user
   template: src=my.cnf dest=/home/{{ dev_user }}/.my.cnf owner={{ dev_user }} group={{ dev_user }} mode=0600
-  when: groups['developer'] is defined
+  when: "'developer' in group_names"
+
 - name: Delete anonymous MySQL server user for {{ ansible_hostname }}
   action: mysql_user user="" host="{{ item }}" state="absent"
   with_items:

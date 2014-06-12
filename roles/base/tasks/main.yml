@@ -2,11 +2,12 @@
 - name: Update Apt cache
   apt: update_cache=yes cache_valid_time=3600
   when: ansible_os_family == 'Debian'
-- name: Install ACL
-  apt: pkg=acl state=present
-  when: ansible_os_family == 'Debian'
-- name: Install PyCurl
-  apt: pkg=python-pycurl state=present
+- name: Install packages we depend on
+  apt: pkg={{ item }} state=present
+  with_items:
+  - acl
+  - python-pycurl
+  - htop
   when: ansible_os_family == 'Debian'
 
 - name: Set Hostname for this boot
