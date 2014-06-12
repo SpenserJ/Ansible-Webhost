@@ -1,0 +1,8 @@
+---
+- name: Allow select IPs unrestricted SSH access
+  ufw: rule=allow port=ssh src={{ item }}
+  with_items: ufw_unrestricted_ssh_ips
+- name: Limit SSH Brute Force
+  ufw: rule=limit port=ssh
+- name: Enable UFW
+  ufw: state=enabled
