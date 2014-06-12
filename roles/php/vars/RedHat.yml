@@ -1,6 +1,6 @@
 php: php
 php_xdebug: php-pecl-xdebug
-php_dev: php_devel
+php_dev: php-devel
 php_mysql: php-mysqli
 php_mod_config: /etc/php.d
 pear_folder: /usr/share/pear

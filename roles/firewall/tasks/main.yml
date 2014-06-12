@@ -1,8 +1,27 @@
 ---
+- name: Check if UFW is installed
+  stat: path=/usr/sbin/ufw
+  register: installed_ufw
+- name: Download UFW source
+  get_url: url=https://launchpad.net/ufw/{{ ufw_version }}/{{ ufw_version }}/+download/ufw-{{ ufw_version }}.tar.gz dest=/tmp/
+  when: installed_ufw.stat.exists == false
+- name: Extract tarball
+  command: chdir=/tmp tar -zxf /tmp/ufw-{{ ufw_version }}.tar.gz
+  when: installed_ufw.stat.exists == false
+- name: Install UFW
+  command: chdir=/tmp/ufw-{{ ufw_version }} python setup.py install --root=
+  when: installed_ufw.stat.exists == false
+- name: Install Init script
+  command: chdir=/tmp/ufw-{{ ufw_version }} cp doc/upstart.example /etc/init/ufw.conf
+  when: installed_ufw.stat.exists == false
+- name: Set proper UFW permissions
+  shell: chmod -R g-w /etc/ufw /etc/default/ufw /lib/ufw/ufw-init /usr/sbin/ufw
+  when: installed_ufw.stat.exists == false
+
 - name: Allow select IPs unrestricted SSH access
-  ufw: rule=allow port=ssh src={{ item }}
+  ufw: rule=allow port=22 src={{ item }}
   with_items: ufw_unrestricted_ssh_ips
 - name: Limit SSH Brute Force
-  ufw: rule=limit port=ssh
+  ufw: rule=limit port=22
 - name: Enable UFW
   ufw: state=enabled
