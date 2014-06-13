@@ -197,6 +197,9 @@ BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
 NameVirtualHost *:80
 {% endif %}
 
+# Load any additional configs
+Include {{ apache2_conf_folder }}/*.conf
+
 {% if 'developer' in group_names %}
 <VirtualHost _default_:80>
     ServerAlias {{ hostname }}
@@ -243,6 +246,3 @@ NameVirtualHost *:80
 {% endif %}
 </Location>
 {% endif %}
-
-# Load any additional configs
-Include {{ apache2_conf_folder }}/*.conf

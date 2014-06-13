@@ -21,7 +21,7 @@
   when: mycnf.stat.exists == false
 - name: Copy ~/.my.cnf
   template: src=my.cnf dest=/home/{{ item }}/.my.cnf owner={{ item }} mode=0600
-  with_items: administrators
+  with_items: administrators | default([])
   when: mycnf.stat.exists == false
 
 - name: Reset /root/.my.cnf's root password on install
@@ -29,7 +29,7 @@
   when: mycnf.stat.exists == false
 - name: Reset ~/.my.cnf's root password on install
   lineinfile: dest=/home/{{ item }}/.my.cnf regexp='^password='  line="password="
-  with_items: administrators
+  with_items: administrators | default([])
   when: mycnf.stat.exists == false
 
 - name: Set MySQL Root
@@ -45,7 +45,7 @@
   template: src=my.cnf dest=/root/.my.cnf owner=root group=root mode=0600
 - name: Copy ~/.my.cnf to Administrator
   template: src=my.cnf dest=/home/{{ item }}/.my.cnf owner={{ item }} group={{ item }} mode=0600
-  with_items: administrators
+  with_items: administrators | default([])
 
 - name: Delete anonymous MySQL server user for {{ ansible_hostname }}
   action: mysql_user user="" host="{{ item }}" state="absent"

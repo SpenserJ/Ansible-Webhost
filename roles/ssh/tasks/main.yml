@@ -1,4 +1,6 @@
 ---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
 - name: Disable Password Authentication
   lineinfile: dest=/etc/ssh/sshd_config
               line="PasswordAuthentication no"
@@ -23,7 +25,7 @@
 
 - name: Create the admin accounts
   user: name={{ item }} append=yes groups='admin'
-  with_items: administrators
+  with_items: administrators | default([])
 - name: Copy SSH Keys
   authorized_key: user={{ item }} key="{{ lookup('file', 'keys/' + item + '.pub') }}"
-  with_items: administrators
+  with_items: administrators | default([])
