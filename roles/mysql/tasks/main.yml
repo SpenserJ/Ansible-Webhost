@@ -11,34 +11,46 @@
   notify: Restart MySQL
 - name: Install MySQL-python
   action: "{{ packager }} pkg={{ mysql_python }} state=present"
-- name: Check for ~/my.cnf
-  stat: path=/home/{{ ansible_ssh_user }}/.my.cnf
+
+- name: Check for /root/my.cnf
+  stat: path=/root/my.cnf
   register: mycnf
+
+- name: Copy /root/my.cnf
+  template: src=my.cnf dest=/root/.my.cnf owner=root mode=0600
+  when: mycnf.stat.exists == false
 - name: Copy ~/my.cnf
-  template: src=my.cnf dest=/home/{{ ansible_ssh_user }}/.my.cnf owner={{ ansible_ssh_user }} mode=0600
+  template: src=my.cnf dest=/home/{{ item }}/.my.cnf owner={{ item }} mode=0600
+  with_items: administrators
+  when: mycnf.stat.exists == false
+
+- name: Reset /root/my.cnf's root password on install
+  lineinfile: dest=/root/my.cnf regexp='^password='  line="password="
   when: mycnf.stat.exists == false
 - name: Reset ~/my.cnf's root password on install
-  lineinfile: dest=/home/{{ ansible_ssh_user }}/.my.cnf regexp='^password='  line="password="
+  lineinfile: dest=/home/{{ item }}/.my.cnf regexp='^password='  line="password="
+  with_items: administrators
   when: mycnf.stat.exists == false
+
 - name: Set MySQL Root
   mysql_user: name=root host="{{ item }}" password={{ mysql_root_password }} priv=*.*:ALL,GRANT
   with_items:
+  - "{{ hostname }}"
   - "{{ ansible_hostname }}"
   - 127.0.0.1
   - ::1
   - localhost
-- name: Copy ~/my.cnf to Administrator
-  template: src=my.cnf dest=/home/{{ ansible_ssh_user }}/.my.cnf owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} mode=0601
+
 - name: Copy ~/my.cnf to root
   template: src=my.cnf dest=/root/.my.cnf owner=root group=root mode=0600
-
-- name: Copy ~/my.cnf to user
-  template: src=my.cnf dest=/home/{{ dev_user }}/.my.cnf owner={{ dev_user }} group={{ dev_user }} mode=0600
-  when: "'developer' in group_names"
+- name: Copy ~/my.cnf to Administrator
+  template: src=my.cnf dest=/home/{{ item }}/.my.cnf owner={{ item }} group={{ item }} mode=0600
+  with_items: administrators
 
 - name: Delete anonymous MySQL server user for {{ ansible_hostname }}
   action: mysql_user user="" host="{{ item }}" state="absent"
   with_items:
+  - "{{ hostname }}"
   - "{{ ansible_hostname }}"
   - 127.0.0.1
   - ::1

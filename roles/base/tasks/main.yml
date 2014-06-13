@@ -2,6 +2,13 @@
 - name: Update Apt cache
   apt: update_cache=yes cache_valid_time=3600
   when: ansible_os_family == 'Debian'
+- name: Get EPEL repository
+  get_url: dest=/tmp/epel-release.rpm  url=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  when: ansible_os_family == "RedHat"
+- name: Install EPEL repository
+  yum: pkg=/tmp/epel-release.rpm state=installed
+  when: ansible_os_family == "RedHat"
+
 - name: Install packages we depend on
   action: "{{ packager  }} pkg={{ item }} state=present"
   with_items:
@@ -22,6 +29,3 @@
 
 - name: Set timezone to America/Edmonton
   file: path=/etc/localtime src=/usr/share/zoneinfo/America/Edmonton state=link force=yes
-
-- name: Ensure the admin group exists
-  group: name=admin

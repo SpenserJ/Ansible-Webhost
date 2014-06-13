@@ -4,13 +4,6 @@
 - name: Load Apache role's vars for this distro
   include_vars: "roles/apache2/vars/{{ ansible_os_family }}.yml"
 
-- name: Get EPEL repository
-  get_url: dest=/tmp/epel-release.rpm  url=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-  when: ansible_os_family == "RedHat"
-- name: Install EPEL repository
-  yum: pkg=/tmp/epel-release.rpm state=installed
-  when: ansible_os_family == "RedHat"
-
 - name: Get PHP PPA
   apt_repository: repo="ppa:ondrej/php5"
   when: ansible_os_family == "Debian"
