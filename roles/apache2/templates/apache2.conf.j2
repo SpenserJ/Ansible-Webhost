@@ -201,25 +201,12 @@ NameVirtualHost *:80
 Include {{ apache2_conf_folder }}/*.conf
 
 {% if 'developer' in group_names %}
-<VirtualHost _default_:80>
-    ServerAlias {{ hostname }}
-    DocumentRoot /var/www/landingpage/
-
-    RewriteEngine on
-    RewriteRule   ^/(.*?)(/.*)$ http://$1.{{ hostname }}$2 [R=301,L]
-</VirtualHost>
-
-<VirtualHost *:80>
-    ServerName landingpage.{{ hostname }}
-    DocumentRoot /var/www/landingpage/
-</VirtualHost>
-
 <VirtualHost *:80>
     ServerAlias *.{{ hostname }}
     VirtualDocumentRoot /var/www/shared/%1
 
     RewriteEngine on
-    RewriteRule   ^/robots.txt /var/www/landingpage/robots.txt
+    RewriteRule   ^/robots.txt /var/www/{{ hostname }}/robots.txt
 </VirtualHost>
 
 <Location /server-status>

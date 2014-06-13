@@ -25,10 +25,6 @@
   copy: src=httpd/conf.d/extendedstatus.conf dest={{ apache2_conf_folder }}/extendedstatus.conf
   notify: restart apache2
 
-- name: Setup LandingPage site
-  unarchive: src=sites/landingpage.tar.gz dest=/var/www/
-  when: "'developer' in group_names"
-
 - name: Create /var/www/shared
   file: path=/var/www/shared state=directory
   when: "'developer' in group_names"
