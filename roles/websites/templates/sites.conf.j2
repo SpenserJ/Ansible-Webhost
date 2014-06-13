@@ -1,7 +1,7 @@
-{% for site in websites + default_websites %}
+{% for domain, settings in websites.iteritems() %}
 <VirtualHost *:80>
-  ServerName {{ site.domain }}
-  DocumentRoot /var/www/{{ site.domain }}/public_html
+  ServerName {{ domain }}
+  DocumentRoot /var/www/{{ domain }}/public_html
 </VirtualHost>
 
 {% endfor %}

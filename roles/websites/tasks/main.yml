@@ -4,20 +4,23 @@
 - name: Load Apache role's vars for this distro
   include_vars: "roles/apache2/vars/{{ ansible_os_family }}.yml"
 
+- name: Debug websites
+  debug: var=websites
+
 - name: Ensure the logs folder exists for all sites
-  file: path="/var/www/{{ item.domain }}/logs" state=directory
-  with_items: websites + default_websites
+  file: path="/var/www/{{ item.key }}/logs" state=directory
+  with_dict: websites
 - name: Ensure the public_html folder exists for all sites
-  file: path="/var/www/{{ item.domain }}/public_html" state=directory
-  with_items: websites + default_websites
+  file: path="/var/www/{{ item.key }}/public_html" state=directory
+  with_dict: websites
 
 - name: Clone Git
-  git: repo="{{ item.git.repo }}"
-       version="{{ item.git.branch | default('master') }}"
-       dest="/var/www/{{ item.domain }}/public_html"
+  git: repo="{{ item.value.git.repo }}"
+       version="{{ item.value.git.branch | default('master') }}"
+       dest="/var/www/{{ item.key }}/public_html"
        accept_hostkey=yes
-  when: item.git is defined
-  with_items: websites + default_websites
+  when: item.value.git is defined
+  with_dict: websites
 
 - name: Enable sites folder in Apache
   sudo: yes
