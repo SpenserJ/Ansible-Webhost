@@ -12,22 +12,22 @@
 - name: Install MySQL-python
   action: "{{ packager }} pkg={{ mysql_python }} state=present"
 
-- name: Check for /root/my.cnf
-  stat: path=/root/my.cnf
+- name: Check for /root/.my.cnf
+  stat: path=/root/.my.cnf
   register: mycnf
 
-- name: Copy /root/my.cnf
+- name: Copy /root/.my.cnf
   template: src=my.cnf dest=/root/.my.cnf owner=root mode=0600
   when: mycnf.stat.exists == false
-- name: Copy ~/my.cnf
+- name: Copy ~/.my.cnf
   template: src=my.cnf dest=/home/{{ item }}/.my.cnf owner={{ item }} mode=0600
   with_items: administrators
   when: mycnf.stat.exists == false
 
-- name: Reset /root/my.cnf's root password on install
-  lineinfile: dest=/root/my.cnf regexp='^password='  line="password="
+- name: Reset /root/.my.cnf's root password on install
+  lineinfile: dest=/root/.my.cnf regexp='^password='  line="password="
   when: mycnf.stat.exists == false
-- name: Reset ~/my.cnf's root password on install
+- name: Reset ~/.my.cnf's root password on install
   lineinfile: dest=/home/{{ item }}/.my.cnf regexp='^password='  line="password="
   with_items: administrators
   when: mycnf.stat.exists == false
@@ -41,9 +41,9 @@
   - ::1
   - localhost
 
-- name: Copy ~/my.cnf to root
+- name: Copy ~/.my.cnf to root
   template: src=my.cnf dest=/root/.my.cnf owner=root group=root mode=0600
-- name: Copy ~/my.cnf to Administrator
+- name: Copy ~/.my.cnf to Administrator
   template: src=my.cnf dest=/home/{{ item }}/.my.cnf owner={{ item }} group={{ item }} mode=0600
   with_items: administrators
 
