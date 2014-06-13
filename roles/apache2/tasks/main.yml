@@ -22,7 +22,8 @@
   notify: restart apache2
 
 - name: Setup ExtendedStatus
-  copy: src=httpd/conf.d/extendedstatus.conf dest={{ apache2_conf_folder }}/extendedstatus.conf
+  copy: src=extendedstatus.conf dest={{ apache2_conf_folder }}/extendedstatus.conf
+  when: "'developer' in group_names"
   notify: restart apache2
 
 - name: Create /var/www/shared
