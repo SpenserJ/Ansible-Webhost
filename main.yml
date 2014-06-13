@@ -4,6 +4,7 @@
   sudo: True
   roles:
   - firewall
+  - ssh
   - base
   - git
 
@@ -32,4 +33,3 @@
   sudo: True
   roles:
   - developer
-  - ssh
