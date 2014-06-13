@@ -45,8 +45,6 @@ LoadModule mpm_prefork_module {{ module_folder }}/mod_mpm_prefork.so
 LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
 {% endif %}
 
-Include {{ apache2_conf_folder }}/*.conf
-
 # Additional configs and modules
 
 <IfModule prefork.c>
@@ -194,8 +192,13 @@ BrowserMatch "^gnome-vfs/1.0" redirect-carefully
 BrowserMatch "^XML Spy" redirect-carefully
 BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
 
+{% if ansible_os_family == 'RedHat' %}
+# Apache 2.2 needs to know to check the name of VirtualHosts
+NameVirtualHost *:80
+{% endif %}
+
 {% if 'developer' in group_names %}
-<VirtualHost *:80>
+<VirtualHost _default_:80>
     ServerAlias {{ hostname }}
     DocumentRoot /var/www/landingpage/
 
@@ -240,3 +243,6 @@ BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
 {% endif %}
 </Location>
 {% endif %}
+
+# Load any additional configs
+Include {{ apache2_conf_folder }}/*.conf
