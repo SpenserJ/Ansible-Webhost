@@ -1,0 +1,5 @@
+- name: restart iptables
+  service: name=iptables state=restarted
+  notify: reload ufw
+- name: reload ufw
+  ufw: state=reloaded

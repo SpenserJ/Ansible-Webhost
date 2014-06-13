@@ -1,4 +1,8 @@
 ---
+- name: Reset default IPTables rules
+  copy: src=iptables dest=/etc/sysconfig/iptables
+  when: ansible_os_family == 'RedHat'
+  notify: restart iptables
 - name: Check if UFW is installed
   stat: path=/usr/sbin/ufw
   register: installed_ufw
@@ -18,10 +22,10 @@
   shell: chmod -R g-w /etc/ufw /etc/default/ufw /lib/ufw/ufw-init /usr/sbin/ufw
   when: installed_ufw.stat.exists == false
 
+- name: Limit SSH Brute Force
+  ufw: rule=limit port=22
 - name: Allow select IPs unrestricted SSH access
   ufw: rule=allow port=22 src={{ item }}
   with_items: ufw_unrestricted_ssh_ips
-- name: Limit SSH Brute Force
-  ufw: rule=limit port=22
 - name: Enable UFW
   ufw: state=enabled
