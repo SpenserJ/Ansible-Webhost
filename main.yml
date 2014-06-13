@@ -14,7 +14,6 @@
   roles:
   - apache2
   - php
-  - phpmyadmin
   - node
 
 - hosts: webserver
