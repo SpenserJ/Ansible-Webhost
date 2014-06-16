@@ -12,10 +12,13 @@
   - /var/www/cgi-bin
   - /var/www/html
   - "{{ apache2_conf_folder }}/welcome.conf"
-  - "{{ apache2_base }}/mods-available/"
-  - "{{ apache2_base }}/mods-enabled/"
   - "{{ apache2_base }}/sites-available/"
   - "{{ apache2_base }}/sites-enabled/"
+  - "{{ apache2_base }}/mods-enabled/mpm_event.conf"
+  - "{{ apache2_base }}/mods-enabled/mpm_event.load"
+
+- name: Install Apache2 MPM ITK
+  action: "{{ packager }} pkg={{ apache2 }}-mpm-itk state=present"
 
 - name: Setup Apache Config
   template: src=apache2.conf.j2 dest={{ apache2_conf_path }}

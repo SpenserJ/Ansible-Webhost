@@ -26,6 +26,16 @@
   when: item.value.overrides is defined
   with_dict: websites
 
+- name: Create a group for each site
+  sudo: yes
+  group: name="{{ item.key }}" system=yes
+  with_dict: websites
+
+- name: Create a user for each site
+  sudo: yes
+  user: name="{{ item.key }}" group="{{ item.key }}" system=yes createhome=no
+  with_dict: websites
+
 - name: Enable sites folder in Apache
   sudo: yes
   template: src=sites.conf.j2 dest="{{ apache2_conf_folder }}/sites.conf"

@@ -45,9 +45,20 @@ LoadModule mpm_prefork_module {{ module_folder }}/mod_mpm_prefork.so
 LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
 {% endif %}
 
+LoadModule mpm_itk_module {{ module_folder }}/mpm_itk.so
+
 # Additional configs and modules
 
 <IfModule prefork.c>
+  StartServers       5
+  MinSpareServers    3
+  MaxSpareServers   15
+  ServerLimit      25
+  MaxClients       25
+  MaxRequestsPerChild  501
+</IfModule>
+
+<IfModule itk.c>
   StartServers       5
   MinSpareServers    3
   MaxSpareServers   15
