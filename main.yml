@@ -1,0 +1,40 @@
+---
+- hosts: all
+  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+  sudo: True
+  roles:
+  - firewall
+  - ssh
+  - base
+  - git
+
+- hosts: webserver
+  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+  sudo: True
+  roles:
+  - apache2
+  - php
+  - node
+
+- hosts: webserver
+  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+  roles:
+  - websites
+
+- hosts: database
+  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+  sudo: True
+  roles:
+  - mysql
+
+- hosts: developer
+  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+  sudo: True
+  roles:
+  - developer
+
+- hosts: all
+  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+  sudo: True
+  roles:
+  - firewall_save

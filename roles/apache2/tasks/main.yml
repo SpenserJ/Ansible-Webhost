@@ -1,64 +1,45 @@
 ---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
 - name: Install Apache2
   action: "{{ packager }} pkg={{ apache2 }} state=present"
-- name: Autostart Apache2
-  service: name={{ apache2 }} enabled=yes state=started
-- name: Allow port 80 through IPTables
-  lineinfile: dest=/etc/sysconfig/iptables
-              regexp='^-A INPUT -p tcp --dport 80 -j ACCEPT$'
-              line='-A INPUT -p tcp --dport 80 -j ACCEPT'
-              insertafter='^-A INPUT -i lo -j ACCEPT$'
-  notify: restart iptables
-  when: ansible_os_family == "RedHat"
 
-- name: Check if /var/www/icons exists
-  stat: path=/var/www/icons
-  register: is_icons_unmoved
-- name: Move /var/www/icons
-  command: "mv -f /var/www/icons /etc/{{ apache2 }}/icons"
-  when: is_icons_unmoved.stat.exists
-
-- name: Check if /var/www/error exists
-  stat: path=/var/www/error
-  register: is_error_unmoved
-- name: Move /var/www/error
-  command: "mv -f /var/www/error /etc/{{ apache2 }}/error"
-  when: is_error_unmoved.stat.exists
-
-- name: Check if /var/www/cgi-bin exists
-  stat: path=/var/www/cgi-bin
-  register: is_cgibin_unmoved
-- name: Move /var/www/cgi-bin
-  command: "mv -f /var/www/cgi-bin /etc/{{ apache2 }}/cgi-bin"
-  when: is_cgibin_unmoved.stat.exists
-
-- name: Check if /var/www/html exists
-  stat: path=/var/www/html
-  register: is_html_unmoved
-- name: Move /var/www/html
-  command: "mv -f /var/www/html /etc/{{ apache2 }}/html"
-  when: is_html_unmoved.stat.exists
-
-- name: Remove Apache Welcome config
-  file: path=/etc/{{ apache2 }}/conf.d/welcome.conf state=absent
+- name: Remove unused paths
+  file: state="absent" path="{{ item }}"
+  with_items:
+  - /var/www/icons
+  - /var/www/error
+  - /var/www/cgi-bin
+  - /var/www/html
+  - "{{ apache2_conf_folder }}/welcome.conf"
+  - "{{ apache2_base }}/mods-available/"
+  - "{{ apache2_base }}/mods-enabled/"
+  - "{{ apache2_base }}/sites-available/"
+  - "{{ apache2_base }}/sites-enabled/"
 
 - name: Setup Apache Config
-  template: src=apache2.conf.j2 dest=/etc/{{ apache2 }}/conf/{{ apache2 }}.conf
+  template: src=apache2.conf.j2 dest={{ apache2_conf_path }}
   notify: restart apache2
 
 - name: Setup ExtendedStatus
-  copy: src=httpd/conf.d/extendedstatus.conf dest=/etc/httpd/conf.d/extendedstatus.conf
+  copy: src=extendedstatus.conf dest={{ apache2_conf_folder }}/extendedstatus.conf
+  when: "'developer' in group_names"
   notify: restart apache2
-
-- name: Setup LandingPage site
-  unarchive: src=sites/landingpage.tar.gz dest=/var/www/
 
 - name: Create /var/www/shared
   file: path=/var/www/shared state=directory
+  when: "'developer' in group_names"
 
-- name: Add {{ dev_user }} to the users group
-  user: name={{ dev_user }} append=yes groups=users
-- name: Grant g:users access to /var/www/shared
-  command: setfacl -Rm g:users:rwx /var/www/shared
-- name: Grant g:users default access to /var/www/shared
-  command: setfacl -dRm g:users:rwx /var/www/shared
+- name: Grant g:admin access to /var/www
+  command: setfacl -Rm g:admin:rwx /var/www
+- name: Grant g:admin default access to /var/www
+  command: setfacl -dRm g:admin:rwx /var/www
+
+- name: Autostart Apache2
+  service: name={{ apache2 }} enabled=yes state=started
+
+- name: Allow Port 80 and 443 through the firewall
+  ufw: rule=allow port={{ item }}
+  with_items:
+  - 80
+  - 443

@@ -1,0 +1,7 @@
+{% for domain, settings in websites.iteritems() %}
+<VirtualHost *:80>
+  ServerName {{ domain | replace('{{ hostname }}', hostname) }}
+  DocumentRoot /var/www/{{ domain | replace('{{ hostname }}', hostname) }}/public_html
+</VirtualHost>
+
+{% endfor %}

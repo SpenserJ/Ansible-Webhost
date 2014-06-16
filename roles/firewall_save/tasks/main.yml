@@ -1,0 +1,14 @@
+---
+- name: Install IPTables Persistent on Debian
+  apt: pkg=iptables-persistent state=present
+  when: ansible_os_family == 'Debian'
+- name: Save IPTables on Debian
+  command: /etc/init.d/iptables-persistent save
+  when: ansible_os_family == 'Debian'
+
+- name: Save IPTables on RedHat
+  command: service iptables save
+  when: ansible_os_family == 'RedHat'
+- name: Save IPTables on RedHat
+  command: service ip6tables save
+  when: ansible_os_family == 'RedHat'

@@ -1,0 +1,33 @@
+---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
+- name: Load Apache role's vars for this distro
+  include_vars: "roles/apache2/vars/{{ ansible_os_family }}.yml"
+
+- name: Ensure the logs folder exists for all sites
+  file: path="/var/www/{{ item.key }}/logs" state=directory
+  with_dict: websites
+- name: Ensure the public_html folder exists for all sites
+  file: path="/var/www/{{ item.key }}/public_html" state=directory
+  with_dict: websites
+
+- name: Clone Git
+  git: repo="{{ item.value.git.repo }}"
+       version="{{ item.value.git.branch | default('master') }}"
+       dest="/var/www/{{ item.key }}/public_html"
+       accept_hostkey=yes
+       update=no
+  when: item.value.git is defined
+  with_dict: websites
+
+- name: Copy any customized files into the site
+  copy: src="website_overrides/{{ item.value.overrides }}/"
+        dest="/var/www/{{ item.key }}/public_html"
+  when: item.value.overrides is defined
+  with_dict: websites
+
+- name: Enable sites folder in Apache
+  sudo: yes
+  template: src=sites.conf.j2 dest="{{ apache2_conf_folder }}/sites.conf"
+  notify:
+  - restart apache2

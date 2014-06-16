@@ -1,0 +1,5 @@
+---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
+- name: Install Git
+  action: "{{ packager }} pkg={{ git }} state=present"

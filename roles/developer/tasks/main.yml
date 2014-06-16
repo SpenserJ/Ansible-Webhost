@@ -1,60 +1,19 @@
 ---
-- name: Set Hostname for this boot
-  shell: hostname {{ dev_hostname }}
-- name: Set Hostname permanently
-  template: src=hostname.j2 dest=/etc/hostname
-- name: Set Hostname for eth1
-  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth1
-              regexp='^DHCP_HOSTNAME={{ dev_hostname }}'
-              line='DHCP_HOSTNAME={{ dev_hostname }}'
-              insertbefore=BOF
-
-- name: Set timezone to America/Edmonton
-  file: path=/etc/localtime src=/usr/share/zoneinfo/America/Edmonton state=link force=yes
-
-- name: Install Git
-  action: "{{ packager }} pkg={{ git }} state=latest"
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
 - name: Install Build Essential (Debian)
-  apt: pkg=build-essential state=present
+  action: "{{ packager }} pkg='{{ build_essential }}' state=present"
   when: ansible_os_family == "Debian"
-- name: Install Development Tools (RedHat)
-  yum: name="@Development tools" state=present
-  when: ansible_os_family == "RedHat"
 - name: Install Vim
   apt: pkg=vim state=present
   when: ansible_os_family == "Debian"
 - name: Install GraphViz
-  action: "{{ packager }} pkg=graphviz state=latest"
+  action: "{{ packager }} pkg=graphviz state=present"
 - name: Install Man
-  action: "{{ packager }} pkg=man state=latest"
+  action: "{{ packager }} pkg=man state=present"
 - name: Copy setup-site Application
   copy: src=setup-site dest=/usr/bin/setup-site owner=root group=root mode=0755
 - name: Copy setup-database Application
   copy: src=setup-database dest=/usr/bin/setup-database owner=root group=root mode=0755
 - name: Copy setup-xdebug Application
   copy: src=setup-xdebug dest=/usr/bin/setup-xdebug owner=root group=root mode=0755
-
-- name: Node.js | Exists
-  stat: path=/usr/bin/node
-  register: installed_node
-- name: Node.js | Download source
-  get_url: url=http://nodejs.org/dist/v0.10.24/node-v0.10.24.tar.gz dest=/tmp/
-  when: installed_node.stat.exists == false
-- name: Node.js | Extract tarball
-  command: tar -zxf /tmp/node-v0.10.24.tar.gz chdir=/tmp
-  when: installed_node.stat.exists == false
-- name: Node.js | Configure
-  shell: ./configure --prefix=/usr chdir=/tmp/node-v0.10.24
-  when: installed_node.stat.exists == false
-- name: Node.js | Make
-  shell: make chdir=/tmp/node-v0.10.24
-  when: installed_node.stat.exists == false
-- name: Node.js | Make install
-  shell: make install chdir=/tmp/node-v0.10.24
-  when: installed_node.stat.exists == false
-- name: Node.js | Gulp exists
-  stat: path=/usr/bin/gulp
-  register: installed_gulp
-- name: Node.js | Install gulp
-  command: npm install -g gulp
-  when: installed_gulp.stat.exists == false

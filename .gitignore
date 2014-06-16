@@ -1,2 +1,6 @@
+.vagrant/
 hosts
-roles/ssh/files/.ssh
+roles/ssh/files/keys
+host_vars
+group_vars
+website_overrides/

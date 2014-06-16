@@ -1,0 +1,44 @@
+---
+# Check if node is already installed
+- name: Exists
+  stat: path=/usr/bin/node
+  register: installed_node
+# If node is installed, get its version
+- name: Check Node.js version
+  shell: "node --version | sed 's/^v//'"
+  register: node_version
+  when: installed_node.stat.exists == true
+# If node isn't installed, or has an old version, mark that we need to upgrade
+- name: Do we need to install or upgrade?
+  command: echo "true"
+  register: needs_upgrade
+  when: node_version.skipped is defined or
+        node_version.stdout is not defined or
+        node_version.stdout | version_compare(ensure_node_version, operator='lt', strict=True) == true
+
+# If we need an upgrade, go through the steps of downloading and compiling the source
+- name: Download source
+  get_url: url=http://nodejs.org/dist/v{{ ensure_node_version }}/node-v{{ ensure_node_version }}.tar.gz dest=/tmp/
+  when: needs_upgrade.skipped is not defined
+- name: Extract tarball
+  command: tar -zxf /tmp/node-v{{ ensure_node_version }}.tar.gz chdir=/tmp
+  when: needs_upgrade.skipped is not defined
+- name: Configure
+  shell: ./configure --prefix=/usr chdir=/tmp/node-v{{ ensure_node_version }}
+  when: needs_upgrade.skipped is not defined
+- name: Make
+  shell: make chdir=/tmp/node-v{{ ensure_node_version }}
+  when: needs_upgrade.skipped is not defined
+- name: Uninstall Apt installed versions of Node
+  apt: pkg=nodejs state=absent
+  when: needs_upgrade.skipped is not defined and ansible_os_family == 'Debian'
+- name: Make install
+  shell: make install chdir=/tmp/node-v{{ ensure_node_version }}
+  when: needs_upgrade.skipped is not defined
+
+- name: Gulp exists
+  stat: path=/usr/bin/gulp
+  register: installed_gulp
+- name: Install gulp
+  command: npm install -g gulp
+  when: installed_gulp.stat.exists == false
