@@ -104,3 +104,10 @@
 - name: Start Mailpile automatically
   lineinfile: dest=/etc/rc.d/rc.local
               line="python2.7 /etc/mailpile/mp"
+
+- name: Block outbound email
+  ufw: rule=reject port={{ item }} direction=out
+  with_items:
+  - 25
+  - 465
+  - 587
