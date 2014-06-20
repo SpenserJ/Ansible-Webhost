@@ -1,0 +1,106 @@
+---
+# Check if Python 2.7 is already installed
+- name: Does Python 2.7 exist?
+  stat: path=/usr/bin/python2.7
+  register: installed_python
+# Check if Setuptools 2.7 is already installed
+- name: Does Setuptools 2.7 exist?
+  stat: path=/usr/bin/easy_install-2.7
+  register: installed_setuptools
+# Check if Pip 2.7 is already installed
+- name: Does Pip 2.7 exist?
+  stat: path=/usr/bin/pip2.7
+  register: installed_pip
+
+# If we don't have Python 2.7, go download and install it
+- name: Download Python 2.7
+  get_url: url=https://www.python.org/ftp/python/2.7.7/Python-2.7.7.tar.xz
+           dest=/tmp/
+  when: installed_python.stat.exists == false
+- name: Extract Python 2.7
+  command: tar -xf /tmp/Python-2.7.7.tar.xz chdir=/tmp
+  when: installed_python.stat.exists == false
+- name: Configure Python 2.7
+  shell: chdir=/tmp/Python-2.7.7 ./configure --prefix=/usr --enable-unicode=ucs4 --enable-shared LDFLAGS="-Wl,-rpath /usr/lib"
+  when: installed_python.stat.exists == false
+- name: Make and Install Python 2.7
+  shell: chdir=/tmp/Python-2.7.7 make && make altinstall
+  when: installed_python.stat.exists == false
+- name: Download Setuptools
+  get_url: url=https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+           dest=/tmp/ez_setup.py
+  when: installed_python.stat.exists == false
+- name: Install Setuptools for Python 2.7
+  command: python2.7 /tmp/ez_setup.py
+  when: installed_setuptools.stat.exists == false
+- name: Install Pip for Python 2.7
+  command: easy_install-2.7 pip
+  when: installed_pip.stat.exists == false
+
+# Force emails sent via postfix to go to the root account
+- name: Postfix Virtual Alias Maps
+  lineinfile: dest=/etc/postfix/main.cf
+              line="virtual_alias_maps = pcre:/etc/postfix/virtual_alias.pcre"
+              regexp="virtual_alias_maps *="
+  notify: restart postfix
+- name: Postfix MyDestination
+  lineinfile: dest=/etc/postfix/main.cf
+              line="mydestination = pcre:/etc/postfix/mydestination.pcre"
+              regexp="mydestination *="
+  notify: restart postfix
+- name: Postfix Local User Relay
+  lineinfile: dest=/etc/postfix/main.cf
+              line="luser_relay = root"
+              regexp="luser_relay *="
+  notify: restart postfix
+- name: Postfix Local Recipient Maps
+  lineinfile: dest=/etc/postfix/main.cf
+              line="local_recipient_maps ="
+              regexp="local_recipient_maps *="
+  notify: restart postfix
+- name: Postfix Home Mailbox
+  lineinfile: dest=/etc/postfix/main.cf
+              line="home_mailbox = Maildir/"
+              regexp="home_mailbox *="
+  notify: restart postfix
+- name: Postfix Virtual Alias file
+  copy: src=virtual_alias.pcre dest=/etc/postfix/virtual_alias.pcre
+  notify: restart postfix
+- name: Postfix MyDestination file
+  copy: src=mydestination.pcre dest=/etc/postfix/mydestination.pcre
+  notify: restart postfix
+
+- name: Install Mailpile Dependencies
+  yum: pkg={{ item }} state=present
+  with_items:
+  - libxml2-devel
+  - libxslt-devel
+  - ruby-devel
+- name: Install Mailpile Gem Dependencies
+  gem: name={{ item }} state=present
+  with_items:
+  - therubyracer
+  - less
+
+# Install Mailpile
+- name: Install Mailpile
+  git: repo=https://github.com/pagekite/Mailpile.git
+       dest=/etc/mailpile
+       update=yes
+- name: Install Mailpile Pip Dependencies
+  pip: executable=pip2.7 requirements=/etc/mailpile/requirements.txt state=latest
+- name: Setup Mailpile
+  command: python2.7 /etc/mailpile/mp setup
+- name: Ensure root's Maildir exists
+  file: path=/root/Maildir/{{ item }} state=directory
+  with_items:
+  - new
+  - cur
+  - tmp
+- name: Tell Mailpile to watch root's Maildir
+  command: python2.7 /etc/mailpile/mp add /root/Maildir/
+- name: Tell Mailpile to update every 30 seconds
+  command: python2.7 /etc/mailpile/mp set prefs.rescan_interval = 30
+- name: Start Mailpile automatically
+  lineinfile: dest=/etc/rc.d/rc.local
+              line="python2.7 /etc/mailpile/mp"

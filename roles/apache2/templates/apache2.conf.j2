@@ -33,6 +33,8 @@ LoadModule negotiation_module {{ module_folder }}/mod_negotiation.so
 LoadModule dir_module {{ module_folder }}/mod_dir.so
 LoadModule alias_module {{ module_folder }}/mod_alias.so
 LoadModule rewrite_module {{ module_folder }}/mod_rewrite.so
+LoadModule proxy_module {{ module_folder }}/mod_proxy.so
+LoadModule proxy_http_module {{ module_folder }}/mod_proxy_http.so
 
 {% if ansible_os_family == 'RedHat' %}
 LoadModule authn_default_module {{ module_folder }}/mod_authn_default.so
@@ -214,6 +216,11 @@ NameVirtualHost *:80
 Include {{ apache2_conf_folder }}/*.conf
 
 {% if 'developer' in group_names %}
+<VirtualHost *:80>
+    ServerName mailblock.{{ hostname }}
+    ProxyPassMatch ^/(.*)$ http://localhost:33411/$1
+</VirtualHost>
+
 <VirtualHost *:80>
     ServerAlias *.{{ hostname }}
     VirtualDocumentRoot /var/www/shared/%1
