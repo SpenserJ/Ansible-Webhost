@@ -45,7 +45,9 @@ LoadModule mpm_prefork_module {{ module_folder }}/mod_mpm_prefork.so
 LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
 {% endif %}
 
+{% if 'developer' not in group_names %}
 LoadModule mpm_itk_module {{ module_folder }}/mpm_itk.so
+{% endif %}
 
 # Additional configs and modules
 

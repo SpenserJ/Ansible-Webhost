@@ -19,6 +19,7 @@
 
 - name: Install Apache2 MPM ITK
   action: "{{ packager }} pkg={{ apache2 }}-mpm-itk state=present"
+  when: "'developer' not in group_names"
 
 - name: Setup Apache Config
   template: src=apache2.conf.j2 dest={{ apache2_conf_path }}
