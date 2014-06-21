@@ -5,6 +5,7 @@
   lineinfile: dest=/etc/ssh/sshd_config
               line="PasswordAuthentication no"
               regexp=^#?PasswordAuthentication
+  when: "'developer' not in group_names or administrators[0] is defined"
   notify: Restart SSHD
 - name: Enable Agent Forwarding
   lineinfile: dest=/etc/ssh/sshd_config
