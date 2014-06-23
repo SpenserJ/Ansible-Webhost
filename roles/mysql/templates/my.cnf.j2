@@ -1,0 +1,14 @@
+[mysqld]
+max_allowed_packet = 16M
+
+{% if mysql_master == true %}
+# MySQL Master
+log-bin=mysql-bin
+server-id=1
+expire_logs_days=10
+max_binlog_size=1G
+{% elif mysql_slave == true and mysql_slave_id is defined %}
+# MySQL Slave
+server-id={{ mysql_slave_id }}
+relay-log=mysqld-relay-bin
+{% endif %}
