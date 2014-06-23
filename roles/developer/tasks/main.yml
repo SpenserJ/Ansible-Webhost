@@ -1,9 +1,4 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
-- name: Install Build Essential (Debian)
-  action: "{{ packager }} pkg='{{ build_essential }}' state=present"
-  when: ansible_os_family == "Debian"
 - name: Install Vim
   apt: pkg=vim state=present
   when: ansible_os_family == "Debian"
