@@ -5,12 +5,6 @@
   action: "{{ packager }} pkg=mysql-server state=present"
 - name: Run MySQL on boot
   service: name={{ mysql_service }} enabled=yes state=started
-- name: Set MySQL Max Packet Size
-  lineinfile: dest={{ mysql_config_path }}
-              line="max_allowed_packet=16M"
-              regexp=^max_allowed_packet
-              insertafter=^\\[mysqld\\]$
-  notify: Restart MySQL
 - name: Install MySQL-python
   action: "{{ packager }} pkg={{ mysql_python }} state=present"
 
