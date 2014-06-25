@@ -35,6 +35,7 @@ LoadModule alias_module {{ module_folder }}/mod_alias.so
 LoadModule rewrite_module {{ module_folder }}/mod_rewrite.so
 LoadModule proxy_module {{ module_folder }}/mod_proxy.so
 LoadModule proxy_http_module {{ module_folder }}/mod_proxy_http.so
+LoadModule remoteip_module {{ module_folder }}/mod_remoteip.so
 
 {% if ansible_os_family == 'RedHat' %}
 LoadModule authn_default_module {{ module_folder }}/mod_authn_default.so
@@ -76,6 +77,9 @@ Group {{ apache_user }}
 ServerAdmin spenser@simplesimple.ca
 UseCanonicalName Off
 DocumentRoot "/var/www"
+
+RemoteIPHeader X-Forwarded-For
+RemoteIPInternalProxy 127.0.0.1
 
 <Directory "/var/www">
     Options +FollowSymLinks

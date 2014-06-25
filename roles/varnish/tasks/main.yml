@@ -1,0 +1,9 @@
+---
+- name: Install Varnish
+  action: "{{ packager }} pkg=varnish state=present"
+- name: Configure Varnish Daemon
+  template: src=varnish_daemon.j2 dest=/etc/default/varnish
+  notify: restart varnish
+- name: Configure Varnish VCL
+  template: src=default.vcl.j2 dest=/etc/varnish/default.vcl
+  notify: reload varnish
