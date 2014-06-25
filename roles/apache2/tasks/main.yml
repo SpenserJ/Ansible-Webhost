@@ -45,5 +45,5 @@
 - name: Allow Port 80 and 443 through the firewall
   ufw: rule=allow port={{ item }}
   with_items:
-  - 80
-  - 443
+  - "{{ apache_port }}"
+  - "{{ apache_ssl_port }}"
