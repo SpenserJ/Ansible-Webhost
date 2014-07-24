@@ -11,6 +11,11 @@
   authorized_key: user={{ item }} key="{{ lookup('file', 'keys/' + item + '.pub') }}"
   with_items: administrators | default([])
 
+- name: Disable Root Login
+  lineinfile: dest=/etc/ssh/sshd_config
+              line="PermitRootLogin no"
+              regexp=^#?PermitRootLogin
+  notify: Restart SSHD
 - name: Disable Password Authentication
   lineinfile: dest=/etc/ssh/sshd_config
               line="PasswordAuthentication no"
@@ -22,6 +27,13 @@
               line="AllowAgentForwarding yes"
               regexp=^#?AllowAgentForwarding
   notify: Restart SSHD
+- name: Limit Allowed Users
+  lineinfile: dest=/etc/ssh/sshd_config
+              line="AllowUsers {{ administrators|join(' ') }}"
+              regexp=^#?AllowUsers
+  when: "administrators[0] is defined"
+  notify: Restart SSHD
+
 - name: Setup the admin group with nopasswd sudo
   lineinfile: dest=/etc/sudoers
               regexp='^%admin'
