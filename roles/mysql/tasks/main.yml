@@ -63,3 +63,4 @@
 
 - name: Allow MySQL connections from other devboxes
   ufw: rule=allow port=3306 src=10.0.0.0/24
+  when: "'developer' in group_names"
