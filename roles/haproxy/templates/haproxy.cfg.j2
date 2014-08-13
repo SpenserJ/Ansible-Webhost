@@ -1,55 +1,73 @@
 global
-	log /dev/log	local0
-	log /dev/log	local1 notice
-	chroot /var/lib/haproxy
-	stats socket /run/haproxy/admin.sock mode 660 level admin
-	stats timeout 30s
-	user haproxy
-	group haproxy
-	daemon
+  log /dev/log  local0
+  log /dev/log  local1 notice
+  chroot /var/lib/haproxy
+  stats socket /run/haproxy/admin.sock mode 660 level admin
+  stats timeout 30s
+  user haproxy
+  group haproxy
+  daemon
 
-	# Default SSL material locations
-	ca-base /etc/ssl/certs
-	crt-base /etc/ssl/private
+  # Default SSL material locations
+  ca-base /etc/ssl/certs
+  crt-base /etc/ssl/private
 
-	# Default ciphers to use on SSL-enabled listening sockets.
-	# For more information, see ciphers(1SSL).
-	ssl-default-bind-ciphers kEECDH+aRSA+AES:kRSA+AES:+AES256:RC4-SHA:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
+  # Default ciphers to use on SSL-enabled listening sockets.
+  # For more information, see ciphers(1SSL).
+  ssl-default-bind-ciphers kEECDH+aRSA+AES:kRSA+AES:+AES256:RC4-SHA:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
 
   # maxconn 512
 
 defaults
-	log	global
-	mode	http
+  log global
+  mode  http
   stats enable
   stats uri /haproxy?stats
   option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:www.donshobbyshop.ca
-	option	httplog
-	option	dontlognull
+  option httplog
+  option forwardfor
+  option http-server-close
+  option dontlognull
         timeout connect 5000
         timeout client  50000
         timeout server  50000
-	errorfile 400 /etc/haproxy/errors/400.http
-	errorfile 403 /etc/haproxy/errors/403.http
-	errorfile 408 /etc/haproxy/errors/408.http
-	errorfile 500 /etc/haproxy/errors/500.http
-	errorfile 502 /etc/haproxy/errors/502.http
-	errorfile 503 /etc/haproxy/errors/503.http
-	errorfile 504 /etc/haproxy/errors/504.http
+  errorfile 400 /etc/haproxy/errors/400.http
+  errorfile 403 /etc/haproxy/errors/403.http
+  errorfile 408 /etc/haproxy/errors/408.http
+  errorfile 500 /etc/haproxy/errors/500.http
+  errorfile 502 /etc/haproxy/errors/502.http
+  errorfile 503 /etc/haproxy/errors/503.http
+  errorfile 504 /etc/haproxy/errors/504.http
 
 frontend front_http
   mode http
   bind *:{{ haproxy_port }}
-  redirect scheme https if !{ ssl_fc }
+
+  acl host_needs_ssl hdr(host) -i example.com
+{%- for domain, settings in websites.iteritems() %}
+{% if settings.ssl | default(false) %} {{ domain | replace('__hostname__', hostname) }}{% endif %}
+{% endfor %}
+
+  # Only redirect to HTTPS if the host needs it, and we're not using it currently
+  redirect scheme https if !{ ssl_fc } host_needs_ssl
+
+  reqadd X-Forwarded-Proto:\ http
+
+  acl static_content path_end .jpg .jpeg .ico .pdf .gif .png .css .js .htm .html
+  acl varnish_available nbsrv(back_varnish) ge 1
+
+  # If this is a static request and Varnish is online, use Varnish
+  use_backend back_varnish if varnish_available static_content
+  # For all other requests, go to the webservers
+  default_backend back_webserver
 
 frontend front_ssl
 # mode tcp
   bind *:{{ haproxy_ssl_port }} ssl crt /etc/ssl/certs/donshobbyshop.ca.pem# npn spdy/3
 
-  option forwardfor
-
   # Add a header stating that the request is coming from HTTPS
   reqadd X-Forwarded-Proto:\ https
+  http-request set-header X-SSL %[ssl_fc]
 
   acl static_content path_end .jpg .jpeg .ico .pdf .gif .png .css .js .htm .html
   acl varnish_available nbsrv(back_varnish) ge 1

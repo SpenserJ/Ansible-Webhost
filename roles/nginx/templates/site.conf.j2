@@ -9,6 +9,11 @@ server {
 
   index index.php index.html index.htm;
 
+  map $http_x_forwarded_proto $https {
+    default off;
+    https on;
+  }
+
   include conf.d/includes/handle_standard_files.conf;
 {% if item.value.type == 'drupal7' %}
   include conf.d/includes/drupal.conf;
@@ -17,11 +22,12 @@ server {
 {% endif %}
 
   location @php {
-    include /etc/nginx/fastcgi_params;
+    include       /etc/nginx/fastcgi_params;
 {% if 'developer' not in group_names %}
-    fastcgi_pass    unix:/var/run/php5-fpm_{{ item.key | replace('__hostname__', hostname) }}.sock;
+    fastcgi_pass  unix:/var/run/php5-fpm_{{ item.key | replace('__hostname__', hostname) }}.sock;
 {% else %}
-    fastcgi_pass    unix:/var/run/php5-fpm.sock;
+    fastcgi_pass  unix:/var/run/php5-fpm.sock;
 {% endif %}
+    fastcgi_param HTTPS $https_proxied;
   }
 }
