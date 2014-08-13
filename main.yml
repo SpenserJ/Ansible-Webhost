@@ -12,7 +12,10 @@
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
   roles:
-  - apache2
+  - { role: nginx,   when: nginx   == true }
+  - { role: varnish, when: varnish == true }
+  - { role: haproxy, when: haproxy == true }
+  - { role: apache2, when: apache  == true }
   - php
   - node
 
@@ -26,12 +29,6 @@
   sudo: True
   roles:
   - mysql
-
-- hosts: production
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
-  sudo: True
-  roles:
-  - varnish
 
 - hosts: developer
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]

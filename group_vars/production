@@ -5,5 +5,6 @@ haproxy_ssl_port: 443
 varnish_port: 8080
 nginx_port: 8081
 nginx_spdy_port: 8082
+nginx: true
 haproxy: true
 varnish: true
