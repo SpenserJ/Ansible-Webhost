@@ -1,0 +1,2 @@
+varnish_port: 8080
+varnish: false
