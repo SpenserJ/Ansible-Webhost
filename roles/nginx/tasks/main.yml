@@ -1,0 +1,23 @@
+---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
+- name: Install Nginx
+  action: "{{ packager }} pkg={{ nginx }} state=present"
+- name: Configure nginx.conf
+  copy: src=nginx.conf dest=/etc/nginx/nginx.conf
+  notify: reload nginx
+- name: Configure Nginx includes for sites
+  copy: src=conf.d dest=/etc/nginx
+  notify: reload nginx
+
+- name: Configure Nginx sites
+  template: src=site.conf.j2
+            dest="/etc/nginx/sites-available/{{ item.key | replace('__hostname__', hostname) }}.conf"
+  with_dict: websites
+  notify: reload nginx
+- name: Enable Nginx Sites
+  file: src="/etc/nginx/sites-available/{{ item.key | replace('__hostname__', hostname) }}.conf"
+        dest="/etc/nginx/sites-enabled/{{ item.key | replace('__hostname__', hostname) }}.conf"
+        state=link
+  with_dict: websites
+  notify: reload nginx

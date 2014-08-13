@@ -1,0 +1,17 @@
+server {
+  server_name {{ item.key | replace('__hostname__', hostname) }};
+  listen {{ nginx_port }};
+  listen {{ nginx_spdy_port }} spdy;
+
+  root          /var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html;
+  access_log    /var/www/{{ item.key | replace('__hostname__', hostname) }}/logs/access.log;
+  error_log     /var/www/{{ item.key | replace('__hostname__', hostname) }}/logs/error.log;
+
+  include conf.d/global/handle_standard_files.conf;
+  include conf.d/global/drupal.conf;
+
+  location @php {
+    include /etc/nginx/fastcgi_params;
+    fastcgi_pass    unix:/var/run/php5-fpm.sock;
+  }
+}
