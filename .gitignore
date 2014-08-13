@@ -2,5 +2,4 @@
 hosts
 roles/ssh/files/keys
 host_vars
-group_vars
 website_overrides/
