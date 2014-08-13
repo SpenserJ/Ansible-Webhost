@@ -1,0 +1,9 @@
+---
+- name: Install PHP FPM
+  action: "{{ packager }} pkg={{ php }}-fpm state=present"
+- name: Configure a PHP FPM Pool for each website
+  template: src=pool.conf.j2
+            dest="/etc/php5/fpm/pool.d/{{ item.key | replace('__hostname__', hostname) }}.conf"
+  with_dict: websites
+  when: "'developer' not in group_names"
+  notify: restart php-fpm

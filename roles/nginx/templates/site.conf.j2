@@ -7,11 +7,21 @@ server {
   access_log    /var/www/{{ item.key | replace('__hostname__', hostname) }}/logs/access.log;
   error_log     /var/www/{{ item.key | replace('__hostname__', hostname) }}/logs/error.log;
 
-  include conf.d/global/handle_standard_files.conf;
-  include conf.d/global/drupal.conf;
+  index index.php index.html index.htm;
+
+  include conf.d/includes/handle_standard_files.conf;
+{% if item.value.type == 'drupal7' %}
+  include conf.d/includes/drupal.conf;
+{% else %}
+  include conf.d/includes/php-fpm.conf;
+{% endif %}
 
   location @php {
     include /etc/nginx/fastcgi_params;
+{% if 'developer' not in group_names %}
+    fastcgi_pass    unix:/var/run/php5-fpm_{{ item.key | replace('__hostname__', hostname) }}.sock;
+{% else %}
     fastcgi_pass    unix:/var/run/php5-fpm.sock;
+{% endif %}
   }
 }

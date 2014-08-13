@@ -1,8 +1,8 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
+#- name: Load vars for this distro
+#  include_vars: "{{ ansible_os_family }}.yml"
 - name: Install Nginx
-  action: "{{ packager }} pkg={{ nginx }} state=present"
+  action: "{{ packager }} pkg=nginx state=present"
 - name: Configure nginx.conf
   copy: src=nginx.conf dest=/etc/nginx/nginx.conf
   notify: reload nginx

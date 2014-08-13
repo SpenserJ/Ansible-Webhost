@@ -2,3 +2,5 @@
 - name: restart apache2
   service: name={{ apache2 }} state=restarted
   when: apache
+- name: restart php-fpm
+  service: name={{ php }}-fpm state=restarted

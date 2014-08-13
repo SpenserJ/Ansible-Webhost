@@ -55,5 +55,8 @@
   notify:
   - restart apache2
 
+- name: Run PHP FPM Tasks
+  include: fpm.yml
+
 - name: Run Drush Tasks
   include: drush.yml

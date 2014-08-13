@@ -2,7 +2,8 @@ websites: {
   "phpmyadmin.__hostname__": {
     domain: "phpmyadmin.__hostname__",
     git: { repo: "https://github.com/phpmyadmin/phpmyadmin.git", branch: "MAINT_4_0_10" },
-    overrides: 'phpmyadmin'
+    overrides: 'phpmyadmin',
+    type: 'php'
   }
 }
 nginx_port: 80
