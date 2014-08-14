@@ -9,11 +9,6 @@ server {
 
   index index.php index.html index.htm;
 
-  map $http_x_forwarded_proto $https {
-    default off;
-    https on;
-  }
-
   include conf.d/includes/handle_standard_files.conf;
 {% if item.value.type == 'drupal7' %}
   include conf.d/includes/drupal.conf;

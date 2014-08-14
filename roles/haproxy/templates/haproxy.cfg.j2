@@ -25,7 +25,7 @@ defaults
   stats uri /haproxy?stats
   option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:www.donshobbyshop.ca
   option httplog
-  option forwardfor
+  option forwardfor header X-Forwarded-For
   option http-server-close
   option dontlognull
         timeout connect 5000
@@ -43,6 +43,12 @@ frontend front_http
   mode http
   bind *:{{ haproxy_port }}
 
+  # Forward the visitor's real IP
+  reqidel ^X-Forwarded-For
+
+  # Add a header stating that the request is coming from HTTP
+  reqadd X-Forwarded-Proto:\ http
+
   acl host_needs_ssl hdr(host) -i example.com
 {%- for domain, settings in websites.iteritems() %}
 {% if settings.ssl | default(false) %} {{ domain | replace('__hostname__', hostname) }}{% endif %}
@@ -50,8 +56,6 @@ frontend front_http
 
   # Only redirect to HTTPS if the host needs it, and we're not using it currently
   redirect scheme https if !{ ssl_fc } host_needs_ssl
-
-  reqadd X-Forwarded-Proto:\ http
 
   acl static_content path_end .jpg .jpeg .ico .pdf .gif .png .css .js .htm .html
   acl varnish_available nbsrv(back_varnish) ge 1
@@ -65,9 +69,13 @@ frontend front_ssl
 # mode tcp
   bind *:{{ haproxy_ssl_port }} ssl crt /etc/ssl/certs/donshobbyshop.ca.pem# npn spdy/3
 
+  http-request set-header X-SSL %[ssl_fc]
+
+  # Forward the visitor's real IP
+  reqidel ^X-Forwarded-For
+
   # Add a header stating that the request is coming from HTTPS
   reqadd X-Forwarded-Proto:\ https
-  http-request set-header X-SSL %[ssl_fc]
 
   acl static_content path_end .jpg .jpeg .ico .pdf .gif .png .css .js .htm .html
   acl varnish_available nbsrv(back_varnish) ge 1
