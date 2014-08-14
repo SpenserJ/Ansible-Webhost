@@ -24,5 +24,6 @@ server {
     fastcgi_pass  unix:/var/run/php5-fpm.sock;
 {% endif %}
     fastcgi_param HTTPS $https_proxied;
+    access_log    $log_php_request;
   }
 }
