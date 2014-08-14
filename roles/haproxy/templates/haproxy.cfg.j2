@@ -23,7 +23,6 @@ defaults
   mode  http
   stats enable
   stats uri /haproxy?stats
-  option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:www.donshobbyshop.ca
   option httplog
   option forwardfor header X-Forwarded-For
   option http-server-close
@@ -39,16 +38,15 @@ defaults
   errorfile 503 /etc/haproxy/errors/503.http
   errorfile 504 /etc/haproxy/errors/504.http
 
-frontend front_http
-  mode http
+frontend front_web
   bind *:{{ haproxy_port }}
+  bind *:{{ haproxy_ssl_port }} ssl crt /etc/ssl/certs/donshobbyshop.ca.pem
 
-  # Forward the visitor's real IP
-  reqidel ^X-Forwarded-For
+  # Add a header for which protocol has been forwarded
+  http-request set-header X-Forwarded-Proto http  if !{ ssl_fc }
+  http-request set-header X-Forwarded-Proto https if  { ssl_fc }
 
-  # Add a header stating that the request is coming from HTTP
-  reqadd X-Forwarded-Proto:\ http
-
+  # Check if the requested host requires SSL
   acl host_needs_ssl hdr(host) -i example.com
 {%- for domain, settings in websites.iteritems() %}
 {% if settings.ssl | default(false) %} {{ domain | replace('__hostname__', hostname) }}{% endif %}
@@ -60,31 +58,24 @@ frontend front_http
   acl static_content path_end .jpg .jpeg .ico .pdf .gif .png .css .js .htm .html
   acl varnish_available nbsrv(back_varnish) ge 1
 
-  # If this is a static request and Varnish is online, use Varnish
+
+
+{% for domain, settings in websites.iteritems() %}
+  # Config for {{ domain | replace('__hostname__', hostname) }}
+  acl host_{{ domain | replace('__hostname__', hostname) }} req.hdr(host) -i {{ domain | replace('__hostname__', hostname) }}
+  acl varnish_available_{{ domain | replace('__hostname__', hostname) }} nbsrv(back_varnish_{{ domain | replace('__hostname__', hostname) }}) ge 1
+  acl web_available_{{ domain | replace('__hostname__', hostname) }} nbsrv(back_web_{{ domain | replace('__hostname__', hostname) }}) ge 1
+  use_backend back_varnish_{{ domain | replace('__hostname__', hostname) }} if static_content host_{{ domain | replace('__hostname__', hostname) }} varnish_available_{{ domain | replace('__hostname__', hostname) }}
+  use_backend back_web_{{ domain | replace('__hostname__', hostname) }} if host_{{ domain | replace('__hostname__', hostname) }} web_available_{{ domain | replace('__hostname__', hostname) }}
+
+{% endfor %}
+
+
+
+
+
+  # If this site isn't configured, fall back to default varnish/web hosts
   use_backend back_varnish if varnish_available static_content
-  # For all other requests, go to the webservers
-  default_backend back_webserver
-
-frontend front_ssl
-# mode tcp
-  bind *:{{ haproxy_ssl_port }} ssl crt /etc/ssl/certs/donshobbyshop.ca.pem# npn spdy/3
-
-  http-request set-header X-SSL %[ssl_fc]
-
-  # Forward the visitor's real IP
-  reqidel ^X-Forwarded-For
-
-  # Add a header stating that the request is coming from HTTPS
-  reqadd X-Forwarded-Proto:\ https
-
-  acl static_content path_end .jpg .jpeg .ico .pdf .gif .png .css .js .htm .html
-  acl varnish_available nbsrv(back_varnish) ge 1
-
-  # If this is a static request and Varnish is online, use Varnish
-  use_backend back_varnish if varnish_available static_content
-  # If this request supports spdy, send it to our spdy webservers
-  # use_backend back_webserver_spdy if { ssl_fc_npn -i spdy/3 }
-  # For all other requests, go to the webservers
   default_backend back_webserver
 
 backend back_varnish
@@ -93,6 +84,13 @@ backend back_varnish
 backend back_webserver
   server nginx01 127.0.0.1:8081 check
 
-#backend back_webserver_spdy
-#  mode tcp
-#  server nginx_spdy_01 127.0.0.1:8082 check
+{% for domain, settings in websites.iteritems() %}
+# Backends for {{ domain | replace('__hostname__', hostname) }}
+backend back_varnish_{{ domain | replace('__hostname__', hostname) }}
+  server varnish_{{ domain | replace('__hostname__', hostname) }} 127.0.0.1:8081 check
+  option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ domain | replace('__hostname__', hostname) }}
+backend back_web_{{ domain | replace('__hostname__', hostname) }}
+  server nginx_{{ domain | replace('__hostname__', hostname) }} 127.0.0.1:8081 check
+  option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ domain | replace('__hostname__', hostname) }}
+
+{% endfor %}

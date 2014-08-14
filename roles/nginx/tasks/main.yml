@@ -10,6 +10,16 @@
   copy: src=conf.d dest=/etc/nginx
   notify: reload nginx
 
+- name: Configure default Nginx site
+  template: src=default_site.conf.j2
+            dest=/etc/nginx/sites-available/default
+  notify: reload nginx
+- name: Enable default Nginx Site
+  file: src=/etc/nginx/sites-available/default
+        dest=/etc/nginx/sites-enabled/default
+        state=link
+  notify: reload nginx
+
 - name: Configure Nginx sites
   template: src=site.conf.j2
             dest="/etc/nginx/sites-available/{{ item.key | replace('__hostname__', hostname) }}.conf"
