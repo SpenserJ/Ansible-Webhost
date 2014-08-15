@@ -34,11 +34,6 @@
   file: path=/var/www/shared state=directory
   when: "'developer' in group_names"
 
-- name: Grant g:admin access to /var/www
-  command: setfacl -Rm g:admin:rwx /var/www
-- name: Grant g:admin default access to /var/www
-  command: setfacl -dRm g:admin:rwx /var/www
-
 - name: Autostart Apache2
   service: name={{ apache2 }} enabled=yes state=started
 

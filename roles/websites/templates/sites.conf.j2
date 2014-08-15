@@ -1,10 +1,10 @@
 {% for domain, settings in websites.iteritems() %}
 <VirtualHost *:{{ apache_port }}>
-  ServerName {{ domain | replace('{{ hostname }}', hostname) }}
-  DocumentRoot /var/www/{{ domain | replace('{{ hostname }}', hostname) }}/public_html
+  ServerName {{ domain | replace('__hostname__', hostname) }}
+  DocumentRoot /var/www/{{ domain | replace('__hostname__', hostname) }}/public_html
 
   <IfModule mpm_itk_module>
-    AssignUserId {{ domain | replace('{{ hostname }}', hostname) }} {{ domain | replace('{{ hostname }}', hostname) }}
+    AssignUserId {{ domain | replace('__hostname__', hostname) }} {{ domain | replace('__hostname__', hostname) }}
   </IfModule>
 </VirtualHost>
 
