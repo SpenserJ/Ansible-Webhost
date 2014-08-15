@@ -5,7 +5,7 @@
   action: "{{ packager }} pkg=nginx state=present"
 - name: Configure nginx.conf
   copy: src=nginx.conf dest=/etc/nginx/nginx.conf
-  notify: reload nginx
+  notify: restart nginx
 - name: Configure Nginx includes for sites
   copy: src=conf.d dest=/etc/nginx
   notify: reload nginx
