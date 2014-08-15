@@ -10,7 +10,7 @@ server {
   index index.php index.html index.htm;
 
   include conf.d/includes/handle_standard_files.conf;
-{% if item.value.type == 'drupal7' %}
+{% if item.value.type is defined and item.value.type == 'drupal7' %}
   include conf.d/includes/drupal.conf;
 {% else %}
   include conf.d/includes/php-fpm.conf;
