@@ -4,17 +4,31 @@
 - name: Load Apache role's vars for this distro
   include_vars: "roles/apache2/vars/{{ ansible_os_family }}.yml"
 
+- name: Ensure the /var/www folder exists
+  sudo: yes
+  file: path=/var/www state=directory
+- name: Ensure the /var/www/shared folder exists
+  sudo: yes
+  file: path=/var/www/shared state=directory
+  when: "'developer' in group_names"
+- name: Grant g:admin access to /var/www
+  sudo: yes
+  command: setfacl -Rm g:admin:rwx /var/www
+- name: Grant g:admin default access to /var/www
+  sudo: yes
+  command: setfacl -dRm g:admin:rwx /var/www
+
 - name: Ensure the logs folder exists for all sites
-  file: path="/var/www/{{ item.key }}/logs" state=directory
+  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}/logs" state=directory
   with_dict: websites
 - name: Ensure the public_html folder exists for all sites
-  file: path="/var/www/{{ item.key }}/public_html" state=directory
+  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html" state=directory
   with_dict: websites
 
 - name: Clone Git
   git: repo="{{ item.value.git.repo }}"
        version="{{ item.value.git.branch | default('master') }}"
-       dest="/var/www/{{ item.key }}/public_html"
+       dest="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html"
        accept_hostkey=yes
        update=no
   when: item.value.git is defined
@@ -22,12 +36,37 @@
 
 - name: Copy any customized files into the site
   copy: src="website_overrides/{{ item.value.overrides }}/"
-        dest="/var/www/{{ item.key }}/public_html"
+        dest="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html"
   when: item.value.overrides is defined
   with_dict: websites
+
+- name: Create a group for each site
+  sudo: yes
+  group: name="{{ item.key | replace('__hostname__', hostname) }}" system=yes
+  with_dict: websites
+  when: "'developer' not in group_names"
+
+- name: Create a user for each site
+  sudo: yes
+  user: name="{{ item.key | replace('__hostname__', hostname) }}"
+        group="{{ item.key | replace('__hostname__', hostname) }}"
+        system=yes
+        createhome=no
+  with_dict: websites
+  when: "'developer' not in group_names"
+
+- name: Ensure files are owned by the correct user
+  sudo: yes
+  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}"
+        state=directory
+        owner="{{ item.key | replace('__hostname__', hostname) }}"
+        group="{{ item.key | replace('__hostname__', hostname) }}"
+  with_dict: websites
+  when: "'developer' not in group_names"
 
 - name: Enable sites folder in Apache
   sudo: yes
   template: src=sites.conf.j2 dest="{{ apache2_conf_folder }}/sites.conf"
+  when: apache == true
   notify:
   - restart apache2

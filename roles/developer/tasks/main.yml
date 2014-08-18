@@ -1,9 +1,4 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
-- name: Install Build Essential (Debian)
-  action: "{{ packager }} pkg='{{ build_essential }}' state=present"
-  when: ansible_os_family == "Debian"
 - name: Install Vim
   apt: pkg=vim state=present
   when: ansible_os_family == "Debian"
@@ -17,3 +12,11 @@
   copy: src=setup-database dest=/usr/bin/setup-database owner=root group=root mode=0755
 - name: Copy setup-xdebug Application
   copy: src=setup-xdebug dest=/usr/bin/setup-xdebug owner=root group=root mode=0755
+- name: Symlink ~/www for all developers
+  file: src=/var/www/shared
+        dest=/home/{{ item }}/www
+        owner={{ item}}
+        group={{ item }}
+        state=link
+  with_items: administrators | default([])
+  when: "'developer' in group_names"

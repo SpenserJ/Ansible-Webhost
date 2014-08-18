@@ -13,16 +13,24 @@
 - name: Install PHP Extensions
   action: "{{ packager }} pkg={{ item }} state=present"
   with_items:
+  - "{{ php }}-curl"
   - "{{ php }}-mcrypt"
-  - "{{ php }}-xhprof"
   - "{{ php }}-gd"
   - "{{ php }}-imap"
   - "{{ php_dev }}"
-  - "{{ php_xdebug }}"
   - "{{ php_mysql }}"
   - php-pear
   notify:
   - restart apache2
+- name: Install PHP Extensions for Developers
+  action: "{{ packager }} pkg={{ item }} state=present"
+  with_items:
+  - "{{ php }}-xhprof"
+  - "{{ php_xdebug }}"
+  when: "'developer' in group_names"
+  notify:
+  - restart apache2
+
 
 - name: Install PHP 5.3 Extensions
   action: "{{ packager }} pkg={{ php }}-{{ item }} state=present"
@@ -38,22 +46,17 @@
   - restart apache2
 - name: Configure xdebug.ini
   copy: src=xdebug.ini dest={{ php_mod_config }}/xdebug.ini
+  when: "'developer' in group_names"
   notify:
   - restart apache2
 - name: Enable PHP configuration in Apache
   template: src=php5.conf.j2 dest="{{ apache2_conf_folder }}/php5.conf"
+  when: apache
   notify:
   - restart apache2
 
-- name: Have we installed Drush before
-  stat: path="{{ pear_folder }}/.channels/pear.drush.org.reg"
-  register: installed_drush
-- name: Discover Drush Channel
-  command: pear channel-discover pear.drush.org
-  when: installed_drush.stat.exists == false
-- name: Install Drush
-  command: pear install drush/drush
-  when: installed_drush.stat.exists == false
-- name: Prepare Drush for use
-  command: drush
-  when: installed_drush.stat.exists == false
+- name: Run PHP FPM Tasks
+  include: fpm.yml
+
+- name: Run Drush Tasks
+  include: drush.yml

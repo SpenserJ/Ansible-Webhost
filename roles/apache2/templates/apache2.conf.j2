@@ -10,7 +10,7 @@ KeepAlive On
 MaxKeepAliveRequests 100
 KeepAliveTimeout 15
 
-Listen 80
+Listen {{ apache_port }}
 
 LoadModule auth_basic_module {{ module_folder }}/mod_auth_basic.so
 LoadModule authn_file_module {{ module_folder }}/mod_authn_file.so
@@ -33,6 +33,9 @@ LoadModule negotiation_module {{ module_folder }}/mod_negotiation.so
 LoadModule dir_module {{ module_folder }}/mod_dir.so
 LoadModule alias_module {{ module_folder }}/mod_alias.so
 LoadModule rewrite_module {{ module_folder }}/mod_rewrite.so
+LoadModule proxy_module {{ module_folder }}/mod_proxy.so
+LoadModule proxy_http_module {{ module_folder }}/mod_proxy_http.so
+LoadModule remoteip_module {{ module_folder }}/mod_remoteip.so
 
 {% if ansible_os_family == 'RedHat' %}
 LoadModule authn_default_module {{ module_folder }}/mod_authn_default.so
@@ -43,6 +46,10 @@ LoadModule logio_module {{ module_folder }}/mod_logio.so
 LoadModule authz_core_module {{ module_folder }}/mod_authz_core.so
 LoadModule mpm_prefork_module {{ module_folder }}/mod_mpm_prefork.so
 LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
+{% endif %}
+
+{% if 'developer' not in group_names %}
+LoadModule mpm_itk_module {{ module_folder }}/mpm_itk.so
 {% endif %}
 
 # Additional configs and modules
@@ -56,11 +63,23 @@ LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
   MaxRequestsPerChild  501
 </IfModule>
 
+<IfModule itk.c>
+  StartServers       5
+  MinSpareServers    3
+  MaxSpareServers   15
+  ServerLimit      25
+  MaxClients       25
+  MaxRequestsPerChild  501
+</IfModule>
+
 User  {{ apache_user }}
 Group {{ apache_user }}
-ServerAdmin root@localhost
+ServerAdmin spenser@simplesimple.ca
 UseCanonicalName Off
 DocumentRoot "/var/www"
+
+RemoteIPHeader X-Forwarded-For
+RemoteIPInternalProxy 127.0.0.1
 
 <Directory "/var/www">
     Options +FollowSymLinks
@@ -73,7 +92,7 @@ DocumentRoot "/var/www"
 {% endif %}
 </Directory>
 
-DirectoryIndex index.php index.html index.html.var
+DirectoryIndex index.php index.html
 
 AccessFileName .htaccess
 <Files ~ "^\.ht">
@@ -102,25 +121,9 @@ LogFormat "%v %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" comb
 LogFormat "%h %l %u %t \"%r\" %>s %b" common
 LogFormat "%{Referer}i -> %U" referer
 LogFormat "%{User-agent}i" agent
-CustomLog /var/log/{{ apache2 }}/access_log combined
+CustomLog /var/log/{{ apache2 }}/access_log combined_vhost
 
-ServerSignature On
-
-Alias /icons/ "/etc/httpd/icons/"
-<Directory "/etc/httpd/icons">
-    Options -FollowSymLinks
-    AllowOverride None
-{% if ansible_os_family == 'RedHat' %}
-    Order allow,deny
-    Allow from all
-{% else %}
-    Require all granted
-{% endif %}
-</Directory>
-
-<IfModule mod_dav_fs.c>
-    DAVLockDB /var/lib/dav/lockdb
-</IfModule>
+ServerSignature Off
 
 AddLanguage ca .ca
 AddLanguage cs .cz .cs
@@ -159,26 +162,6 @@ AddHandler type-map var
 AddType text/html .shtml
 AddOutputFilter INCLUDES .shtml
 
-Alias /error/ "/etc/httpd/error/"
-<IfModule mod_negotiation.c>
-    <IfModule mod_include.c>
-        <Directory "/etc/httpd/error">
-            AllowOverride None
-            Options IncludesNoExec
-            AddOutputFilter Includes html
-            AddHandler type-map var
-{% if ansible_os_family == 'RedHat' %}
-            Order allow,deny
-            Allow from all
-{% else %}
-            Require all granted
-{% endif %}
-            LanguagePriority en es de fr
-            ForceLanguagePriority Prefer Fallback
-        </Directory>
-    </IfModule>
-</IfModule>
-
 BrowserMatch "Mozilla/2" nokeepalive
 BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
 BrowserMatch "RealPlayer 4\.0" force-response-1.0
@@ -192,16 +175,28 @@ BrowserMatch "^gnome-vfs/1.0" redirect-carefully
 BrowserMatch "^XML Spy" redirect-carefully
 BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
 
+ServerName {{ hostname }}
 {% if ansible_os_family == 'RedHat' %}
 # Apache 2.2 needs to know to check the name of VirtualHosts
-NameVirtualHost *:80
+NameVirtualHost *:{{ apache_port }}
 {% endif %}
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|xml|gz|html|php|txt)$">
+    Header append Vary: Accept-Encoding
+  </FilesMatch>
+</IfModule>
 
 # Load any additional configs
 Include {{ apache2_conf_folder }}/*.conf
 
 {% if 'developer' in group_names %}
-<VirtualHost *:80>
+<VirtualHost *:{{ apache_port }}>
+    ServerName mailblock.{{ hostname }}
+    ProxyPassMatch ^/(.*)$ http://localhost:33411/$1
+</VirtualHost>
+
+<VirtualHost *:{{ apache_port }}>
     ServerAlias *.{{ hostname }}
     VirtualDocumentRoot /var/www/shared/%1
 

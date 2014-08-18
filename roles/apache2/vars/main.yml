@@ -1,0 +1,2 @@
+apache_port: 80
+apache_ssl_port: 443

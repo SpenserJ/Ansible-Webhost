@@ -1,0 +1,94 @@
+backend default {
+    .host = "{{ nginx_host }}";
+    .port = "{{ nginx_port }}";
+}
+
+# Below is a commented-out copy of the default VCL logic.  If you
+# redefine any of these subroutines, the built-in logic will be
+# appended to your code.
+sub vcl_recv {
+  # Remove has_js and Google Analytics __* cookies.
+  set req.http.Cookie = regsuball(req.http.Cookie, "(^|;\s*)(__[a-z]+|has_js)=[^;]*", "");
+  # Remove a ";" prefix, if present.
+  set req.http.Cookie = regsub(req.http.Cookie, "^;\s*", "");
+  # Remove empty cookies.
+  if (req.http.Cookie ~ "^\s*$") {
+    unset req.http.Cookie;
+  }
+
+  // Don't cache private files
+  if (req.url ~ "^/sites/default/files/private/") {
+    return (pass);
+  }
+  // Skip the Varnish cache for install, update, and cron
+  if (req.url ~ "^/(install|update|cron)\.php") {
+    return (pass);
+  }
+
+  if (req.url ~ "/(libraries|misc|modules|themes)/.*\.(js|css|gif|jpg|jpeg|png)(\?|$)") {
+    /* Various JS, CSS, and images that should be cached */
+    unset req.http.Cookie;
+  }
+  if (req.url ~ "^/sites/[^/]+/files/") {
+    /* Uploaded files should be cached */
+    unset req.http.Cookie;
+  }
+
+  // Normalize the Accept-Encoding header
+  // as per: http://varnish-cache.org/wiki/FAQ/Compression
+  if (req.http.Accept-Encoding) {
+    if (req.url ~ "\.(jpg|png|gif|gz|tgz|bz2|tbz|mp3|ogg)$") {
+      # No point in compressing these
+      remove req.http.Accept-Encoding;
+    } elsif (req.http.Accept-Encoding ~ "gzip") {
+      set req.http.Accept-Encoding = "gzip";
+    } else {
+      # Unknown or deflate algorithm
+      remove req.http.Accept-Encoding;
+    }
+  }
+
+  // Let's have a little grace
+  set req.grace = 30s;
+
+  if (req.restarts == 0) {
+    if (req.http.x-forwarded-for) {
+      set req.http.X-Forwarded-For = req.http.X-Forwarded-For + ", " + client.ip;
+    } else {
+      set req.http.X-Forwarded-For = client.ip;
+    }
+  }
+  if (req.request != "GET" &&
+      req.request != "HEAD" &&
+      req.request != "PUT" &&
+      req.request != "POST" &&
+      req.request != "TRACE" &&
+      req.request != "OPTIONS" &&
+      req.request != "DELETE") {
+    /* Non-RFC2616 or CONNECT which is weird. */
+    return (pipe);
+  }
+  if (req.request != "GET" && req.request != "HEAD") {
+    /* We only deal with GET and HEAD by default */
+    return (pass);
+  }
+  if (req.http.Authorization || req.http.Cookie) {
+    /* Not cacheable by default */
+    return (pass);
+  }
+  return (lookup);
+}
+
+sub vcl_hash {
+  if (req.http.Cookie) {
+    hash_data (req.http.Cookie);
+  }
+}
+
+sub vcl_deliver {
+  if (obj.hits > 0) {
+    set resp.http.X-Cache = "HIT";
+  } else {
+    set resp.http.X-Cache = "MISS";
+  }
+}

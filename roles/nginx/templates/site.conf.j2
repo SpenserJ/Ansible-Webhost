@@ -1,0 +1,29 @@
+server {
+  server_name {{ item.key | replace('__hostname__', hostname) }};
+  listen {{ nginx_port }};
+  listen {{ nginx_spdy_port }} spdy;
+
+  root          /var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html;
+  access_log    /var/www/{{ item.key | replace('__hostname__', hostname) }}/logs/access.log;
+  error_log     /var/www/{{ item.key | replace('__hostname__', hostname) }}/logs/error.log;
+
+  index index.php index.html index.htm;
+
+  include conf.d/includes/handle_standard_files.conf;
+{% if item.value.type is defined and item.value.type == 'drupal7' %}
+  include conf.d/includes/drupal.conf;
+{% else %}
+  include conf.d/includes/php-fpm.conf;
+{% endif %}
+
+  location @php {
+    include       /etc/nginx/fastcgi_params;
+{% if 'developer' not in group_names %}
+    fastcgi_pass  unix:/var/run/php5-fpm_{{ item.key | replace('__hostname__', hostname) }}.sock;
+{% else %}
+    fastcgi_pass  unix:/var/run/php5-fpm.sock;
+{% endif %}
+    fastcgi_param HTTPS $https_proxied;
+    access_log    $log_php_request;
+  }
+}

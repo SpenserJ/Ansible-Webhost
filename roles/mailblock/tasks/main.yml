@@ -1,0 +1,92 @@
+---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Setup Python 2.7 for RedHat
+  include: redhat.yml
+  when: ansible_os_family == 'RedHat'
+- name: Setup Python 2.7 for Debian
+  apt: pkg={{ item }}
+  with_items:
+  - python2.7-dev
+  - python-pip
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure Postfix is installed
+  action: "{{ packager }} pkg=postfix"
+
+# Force emails sent via postfix to go to the root account
+- name: Postfix Virtual Alias Maps
+  lineinfile: dest=/etc/postfix/main.cf
+              line="virtual_alias_maps = pcre:/etc/postfix/virtual_alias.pcre"
+              regexp="virtual_alias_maps *="
+  notify: restart postfix
+- name: Postfix MyDestination
+  lineinfile: dest=/etc/postfix/main.cf
+              line="mydestination = pcre:/etc/postfix/mydestination.pcre"
+              regexp="mydestination *="
+  notify: restart postfix
+- name: Postfix Local User Relay
+  lineinfile: dest=/etc/postfix/main.cf
+              line="luser_relay = root"
+              regexp="luser_relay *="
+  notify: restart postfix
+- name: Postfix Local Recipient Maps
+  lineinfile: dest=/etc/postfix/main.cf
+              line="local_recipient_maps ="
+              regexp="local_recipient_maps *="
+  notify: restart postfix
+- name: Postfix Home Mailbox
+  lineinfile: dest=/etc/postfix/main.cf
+              line="home_mailbox = Maildir/"
+              regexp="home_mailbox *="
+  notify: restart postfix
+- name: Postfix Virtual Alias file
+  copy: src=virtual_alias.pcre dest=/etc/postfix/virtual_alias.pcre
+  notify: restart postfix
+- name: Postfix MyDestination file
+  copy: src=mydestination.pcre dest=/etc/postfix/mydestination.pcre
+  notify: restart postfix
+
+- name: Install Mailpile Dependencies
+  action: "{{ packager }} pkg={{ item }}"
+  with_items:
+  - "{{ libxml }}"
+  - "{{ libxslt }}"
+  - "{{ ruby }}"
+- name: Install Mailpile Gem Dependencies
+  gem: name={{ item }} state=present
+  with_items:
+  - therubyracer
+  - less
+
+# Install Mailpile
+- name: Install Mailpile
+  git: repo=https://github.com/pagekite/Mailpile.git
+       dest=/etc/mailpile
+       update=yes
+- name: Install Mailpile Pip Dependencies
+  pip: "executable={{ pip }} requirements=/etc/mailpile/requirements.txt state=latest"
+- name: Setup Mailpile
+  command: python2.7 /etc/mailpile/mp setup
+- name: Ensure root's Maildir exists
+  file: path=/root/Maildir/{{ item }} state=directory
+  with_items:
+  - new
+  - cur
+  - tmp
+- name: Tell Mailpile to watch root's Maildir
+  command: python2.7 /etc/mailpile/mp add /root/Maildir/
+- name: Tell Mailpile to update every 30 seconds
+  command: python2.7 /etc/mailpile/mp set prefs.rescan_interval = 30
+- name: Start Mailpile automatically
+  lineinfile: dest="{{ rclocal }}"
+              line="python2.7 /etc/mailpile/mp"
+              insertbefore=BOF
+
+- name: Block outbound email
+  ufw: rule=reject port={{ item }} direction=out
+  with_items:
+  - 25
+  - 465
+  - 587

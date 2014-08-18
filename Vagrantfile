@@ -11,6 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network :public_network, :bridge => 'eth0'
 
   config.vm.provider :virtualbox do |vb|
+    vb.name = "Webhost"
     vb.customize ["modifyvm", :id, "--memory", "2048"]
     vb.customize ["modifyvm", :id, "--cpus", "4"]
   end

@@ -1,14 +1,10 @@
 ---
+- name: Load vars for this distro
+  include_vars: "{{ ansible_os_family }}.yml"
 - name: Install MySQL
   action: "{{ packager }} pkg=mysql-server state=present"
 - name: Run MySQL on boot
   service: name={{ mysql_service }} enabled=yes state=started
-- name: Set MySQL Max Packet Size
-  lineinfile: dest={{ mysql_config_path }}
-              line="max_allowed_packet=16M"
-              regexp=^max_allowed_packet
-              insertafter=^\\[mysqld\\]$
-  notify: Restart MySQL
 - name: Install MySQL-python
   action: "{{ packager }} pkg={{ mysql_python }} state=present"
 
@@ -17,10 +13,10 @@
   register: mycnf
 
 - name: Copy /root/.my.cnf
-  template: src=my.cnf dest=/root/.my.cnf owner=root mode=0600
+  template: src=my_user.cnf.j2 dest=/root/.my.cnf owner=root mode=0600
   when: mycnf.stat.exists == false
 - name: Copy ~/.my.cnf
-  template: src=my.cnf dest=/home/{{ item }}/.my.cnf owner={{ item }} mode=0600
+  template: src=my_user.cnf.j2 dest=/home/{{ item }}/.my.cnf owner={{ item }} mode=0600
   with_items: administrators | default([])
   when: mycnf.stat.exists == false
 
@@ -42,9 +38,9 @@
   - localhost
 
 - name: Copy ~/.my.cnf to root
-  template: src=my.cnf dest=/root/.my.cnf owner=root group=root mode=0600
+  template: src=my_user.cnf.j2 dest=/root/.my.cnf owner=root group=root mode=0600
 - name: Copy ~/.my.cnf to Administrator
-  template: src=my.cnf dest=/home/{{ item }}/.my.cnf owner={{ item }} group={{ item }} mode=0600
+  template: src=my_user.cnf.j2 dest=/home/{{ item }}/.my.cnf owner={{ item }} group={{ item }} mode=0600
   with_items: administrators | default([])
 
 - name: Delete anonymous MySQL server user for {{ ansible_hostname }}
@@ -59,3 +55,12 @@
   action: mysql_user user="" state="absent"
 - name: Remove the MySQL test database
   action: mysql_db db=test state=absent
+
+- name: Configure MySQL
+  template: src=my.cnf.j2 dest=/etc/mysql/conf.d/z_ansible.cnf
+  notify: Restart MySQL
+- debug: var=mysql_master
+
+- name: Allow MySQL connections from other devboxes
+  ufw: rule=allow port=3306 src=10.0.0.0/24
+  when: "'developer' in group_names"

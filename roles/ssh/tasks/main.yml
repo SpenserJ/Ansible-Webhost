@@ -1,25 +1,6 @@
 ---
 - name: Load vars for this distro
   include_vars: "{{ ansible_os_family }}.yml"
-- name: Disable Password Authentication
-  lineinfile: dest=/etc/ssh/sshd_config
-              line="PasswordAuthentication no"
-              regexp=^#?PasswordAuthentication
-  notify: Restart SSHD
-- name: Enable Agent Forwarding
-  lineinfile: dest=/etc/ssh/sshd_config
-              line="AllowAgentForwarding yes"
-              regexp=^#?AllowAgentForwarding
-  notify: Restart SSHD
-- name: Setup the admin group with nopasswd sudo
-  lineinfile: dest=/etc/sudoers
-              regexp='^%admin'
-              line='%admin ALL=(ALL) NOPASSWD:ALL'
-  when: "'developer' in group_names"
-- name: Configure SSH to ForwardAgent when connecting to another devbox
-  copy: src=ssh_config dest=/etc/ssh/ssh_config
-  when: "'developer' in group_names"
-
 - name: Ensure the admin group exists
   group: name=admin
 
@@ -29,3 +10,35 @@
 - name: Copy SSH Keys
   authorized_key: user={{ item }} key="{{ lookup('file', 'keys/' + item + '.pub') }}"
   with_items: administrators | default([])
+
+- name: Disable Root Login
+  lineinfile: dest=/etc/ssh/sshd_config
+              line="PermitRootLogin no"
+              regexp=^#?PermitRootLogin
+  notify: Restart SSHD
+- name: Disable Password Authentication
+  lineinfile: dest=/etc/ssh/sshd_config
+              line="PasswordAuthentication no"
+              regexp=^#?PasswordAuthentication
+  when: "'developer' not in group_names or administrators[0] is defined"
+  notify: Restart SSHD
+- name: Enable Agent Forwarding
+  lineinfile: dest=/etc/ssh/sshd_config
+              line="AllowAgentForwarding yes"
+              regexp=^#?AllowAgentForwarding
+  notify: Restart SSHD
+- name: Limit Allowed Users
+  lineinfile: dest=/etc/ssh/sshd_config
+              line="AllowUsers {{ administrators|join(' ') }}"
+              regexp=^#?AllowUsers
+  when: "administrators[0] is defined"
+  notify: Restart SSHD
+
+- name: Setup the admin group with nopasswd sudo
+  lineinfile: dest=/etc/sudoers
+              regexp='^%admin'
+              line='%admin ALL=(ALL) NOPASSWD:ALL'
+  when: "'developer' in group_names"
+- name: Configure SSH to ForwardAgent when connecting to another devbox
+  copy: src=ssh_config dest=/etc/ssh/ssh_config
+  when: "'developer' in group_names"

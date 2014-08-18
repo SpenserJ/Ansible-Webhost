@@ -12,10 +12,14 @@
   - /var/www/cgi-bin
   - /var/www/html
   - "{{ apache2_conf_folder }}/welcome.conf"
-  - "{{ apache2_base }}/mods-available/"
-  - "{{ apache2_base }}/mods-enabled/"
   - "{{ apache2_base }}/sites-available/"
   - "{{ apache2_base }}/sites-enabled/"
+  - "{{ apache2_base }}/mods-enabled/mpm_event.conf"
+  - "{{ apache2_base }}/mods-enabled/mpm_event.load"
+
+- name: Install Apache2 MPM ITK
+  action: "{{ packager }} pkg={{ apache2 }}-mpm-itk state=present"
+  when: "'developer' not in group_names"
 
 - name: Setup Apache Config
   template: src=apache2.conf.j2 dest={{ apache2_conf_path }}
@@ -30,16 +34,11 @@
   file: path=/var/www/shared state=directory
   when: "'developer' in group_names"
 
-- name: Grant g:admin access to /var/www
-  command: setfacl -Rm g:admin:rwx /var/www
-- name: Grant g:admin default access to /var/www
-  command: setfacl -dRm g:admin:rwx /var/www
-
 - name: Autostart Apache2
   service: name={{ apache2 }} enabled=yes state=started
 
 - name: Allow Port 80 and 443 through the firewall
   ufw: rule=allow port={{ item }}
   with_items:
-  - 80
-  - 443
+  - "{{ apache_port }}"
+  - "{{ apache_ssl_port }}"

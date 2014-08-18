@@ -1,0 +1,12 @@
+- name: Have we installed Drush before
+  stat: path="{{ pear_folder }}/.channels/pear.drush.org.reg"
+  register: installed_drush
+- name: Discover Drush Channel
+  command: pear channel-discover pear.drush.org
+  when: installed_drush.stat.exists == false
+- name: Install Drush
+  command: pear install drush/drush
+  when: installed_drush.stat.exists == false
+- name: Prepare Drush for use
+  command: drush
+  when: installed_drush.stat.exists == false
