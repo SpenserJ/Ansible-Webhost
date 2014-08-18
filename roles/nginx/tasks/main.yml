@@ -35,3 +35,16 @@
         state=link
   with_dict: websites
   notify: reload nginx
+
+- name: When Varnish is used, only allow access to Nginx from management IPs
+  ufw: rule=allow port={{ item[0] }} from_ip={{ item[1] }}
+  with_nested:
+  - [ "{{ nginx_port }}", "{{ nginx_spdy_port }}" ]
+  - management_ips
+  when: varnish
+- name: When Varnish is disabled, allow unrestricted access to Nginx
+  ufw: rule=allow port={{ item[0] }}
+  with_nested:
+  - "{{ nginx_port }}"
+  - "{{ nginx_spdy_port }}"
+  when: not varnish
