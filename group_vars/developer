@@ -1,4 +1,4 @@
-ufw_unrestricted_ssh_ips: [ '10.0.0.0/24' ]
+management_ips: [ '10.0.0.0/24' ]
 administrators: [ 'ben', 'chad', 'johan', 'mike', 'spenser' ]
 websites: {
   "__hostname__": {

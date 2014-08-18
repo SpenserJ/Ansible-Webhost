@@ -1,4 +1,4 @@
-ufw_unrestricted_ssh_ips: [ '184.71.62.238' ]
+management_ips: [ '184.71.62.238' ]
 adminsistrators: [ 'spenser', 'johan' ]
 haproxy_port: 80
 haproxy_ssl_port: 443
