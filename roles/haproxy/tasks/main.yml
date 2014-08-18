@@ -13,3 +13,8 @@
 - name: Configure HAProxy
   template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
   notify: reload haproxy
+- name: Allow HAProxy through UFW
+  ufw: rule=allow port={{ item }}
+  with_items:
+  - "{{ haproxy_port }}"
+  - "{{ haproxy_ssl_port }}"

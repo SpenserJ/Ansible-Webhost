@@ -58,8 +58,6 @@ frontend front_web
   acl static_content path_end .jpg .jpeg .ico .pdf .gif .png .css .js .htm .html
   acl varnish_available nbsrv(back_varnish) ge 1
 
-
-
 {% for domain, settings in websites.iteritems() %}
   # Config for {{ domain | replace('__hostname__', hostname) }}
   acl host_{{ domain | replace('__hostname__', hostname) }} req.hdr(host) -i {{ domain | replace('__hostname__', hostname) }}
@@ -70,10 +68,6 @@ frontend front_web
 
 {% endfor %}
 
-
-
-
-
   # If this site isn't configured, fall back to default varnish/web hosts
   use_backend back_varnish if varnish_available static_content
   default_backend back_webserver
@@ -83,8 +77,8 @@ backend back_varnish
 
 backend back_webserver
   server nginx01 127.0.0.1:8081 check
-
 {% for domain, settings in websites.iteritems() %}
+
 # Backends for {{ domain | replace('__hostname__', hostname) }}
 backend back_varnish_{{ domain | replace('__hostname__', hostname) }}
   server varnish_{{ domain | replace('__hostname__', hostname) }} 127.0.0.1:8081 check
@@ -92,5 +86,4 @@ backend back_varnish_{{ domain | replace('__hostname__', hostname) }}
 backend back_web_{{ domain | replace('__hostname__', hostname) }}
   server nginx_{{ domain | replace('__hostname__', hostname) }} 127.0.0.1:8081 check
   option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ domain | replace('__hostname__', hostname) }}
-
 {% endfor %}

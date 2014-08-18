@@ -7,6 +7,10 @@
 - name: Ensure the /var/www folder exists
   sudo: yes
   file: path=/var/www state=directory
+- name: Ensure the /var/www/shared folder exists
+  sudo: yes
+  file: path=/var/www/shared state=directory
+  when: "'developer' in group_names"
 - name: Grant g:admin access to /var/www
   sudo: yes
   command: setfacl -Rm g:admin:rwx /var/www
