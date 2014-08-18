@@ -1,0 +1,56 @@
+###
+# Hosts with a hostname variable
+###
+spenser.dev             hostname=spenser.dev         # Dev Ubuntu for Spenser
+aaron.dev               hostname=aaron.dev           # Dev CentOS for Aaron
+jake.dev                hostname=dev.jakesblog.com   # Dev Ubuntu at subdomain
+staging-dev             hostname=staging.dev         # Dev Staging Server
+staging-prod            hostname=staging.prod        # Prod Staging Server
+example.com             hostname=example.com         # Prod website with SSL
+
+###
+# VMs and other servers used for developing and testing websites.
+###
+[devboxes]
+spenser.dev
+aaron.dev
+jake.dev
+staging-dev
+
+###
+# Servers that should have a webserver stack loaded onto them.
+###
+[webserver]
+staging-prod
+example.com
+
+# Webservers should also include any of our developers' servers.
+[webserver:children]
+devboxes
+
+###
+# Servers that should have a database system on them.
+###
+[database]
+staging-prod
+example.com
+
+# Databases should also include any of our developers' servers.
+[database:children]
+devboxes
+
+###
+# Servers that need additional tooling to make development and debugging easier.
+###
+[developer]
+
+# Devboxes should have development tooling.
+[developer:children]
+devboxes
+
+###
+# Servers that need to handle production-level traffic.
+###
+[production]
+staging-prod
+example.com
