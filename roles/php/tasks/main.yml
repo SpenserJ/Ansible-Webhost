@@ -41,7 +41,8 @@
   when: ansible_os_family == "RedHat"
 
 - name: Configure php.ini
-  copy: src=php.ini dest=/etc/php.ini
+  template: src=php.ini.j2 dest=/etc/php.ini
+  when: apache
   notify:
   - restart apache2
 - name: Configure xdebug.ini
@@ -57,6 +58,7 @@
 
 - name: Run PHP FPM Tasks
   include: fpm.yml
+  when: nginx
 
 - name: Run Drush Tasks
   include: drush.yml

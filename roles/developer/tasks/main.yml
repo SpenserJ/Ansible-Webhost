@@ -12,11 +12,3 @@
   copy: src=setup-database dest=/usr/bin/setup-database owner=root group=root mode=0755
 - name: Copy setup-xdebug Application
   copy: src=setup-xdebug dest=/usr/bin/setup-xdebug owner=root group=root mode=0755
-- name: Symlink ~/www for all developers
-  file: src=/var/www/shared
-        dest=/home/{{ item }}/www
-        owner={{ item}}
-        group={{ item }}
-        state=link
-  with_items: administrators | default([])
-  when: "'developer' in group_names"

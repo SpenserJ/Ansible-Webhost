@@ -9,9 +9,9 @@ staging-prod            hostname=staging.prod        # Prod Staging Server
 example.com             hostname=example.com         # Prod website with SSL
 
 ###
-# VMs and other servers used for developing and testing websites.
+# VMs and other servers used for development and debugging of websites and apps.
 ###
-[devboxes]
+[developer]
 spenser.dev
 aaron.dev
 jake.dev
@@ -26,7 +26,7 @@ example.com
 
 # Webservers should also include any of our developers' servers.
 [webserver:children]
-devboxes
+developer
 
 ###
 # Servers that should have a database system on them.
@@ -37,16 +37,7 @@ example.com
 
 # Databases should also include any of our developers' servers.
 [database:children]
-devboxes
-
-###
-# Servers that need additional tooling to make development and debugging easier.
-###
-[developer]
-
-# Devboxes should have development tooling.
-[developer:children]
-devboxes
+developer
 
 ###
 # Servers that need to handle production-level traffic.

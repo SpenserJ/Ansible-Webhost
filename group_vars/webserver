@@ -6,7 +6,4 @@ websites: {
     type: 'php'
   }
 }
-nginx_port: 80
-nginx_spdy_port: 81
-nginx_ssl_port: 443
 nginx_host: 127.0.0.1
