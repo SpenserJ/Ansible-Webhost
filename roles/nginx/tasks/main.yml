@@ -36,6 +36,18 @@
   with_dict: websites
   notify: reload nginx
 
+- name: Configure Nginx Mailblock site for development
+  template: src=site_mailblock.conf.j2
+            dest=/etc/nginx/sites-available/mailblock.conf
+  notify: reload nginx
+  when: "'developer' in group_names"
+- name: Enable Nginx mailblock site for development
+  file: src=/etc/nginx/sites-available/mailblock.conf
+        dest=/etc/nginx/sites-enabled/mailblock.conf
+        state=link
+  notify: reload nginx
+  when: "'developer' in group_names"
+
 - name: When Varnish is used, only allow access to Nginx from management IPs
   ufw: rule=allow port={{ item[0] }} from_ip={{ item[1] }}
   with_nested:

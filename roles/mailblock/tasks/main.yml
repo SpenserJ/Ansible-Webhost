@@ -13,7 +13,10 @@
   when: ansible_os_family == 'Debian'
 
 - name: Ensure Postfix is installed
-  action: "{{ packager }} pkg=postfix"
+  action: "{{ packager }} pkg={{ item }}"
+  with_items:
+  - postfix
+  - postfix-pcre
 
 # Force emails sent via postfix to go to the root account
 - name: Postfix Virtual Alias Maps
@@ -64,6 +67,7 @@
 - name: Install Mailpile
   git: repo=https://github.com/pagekite/Mailpile.git
        dest=/etc/mailpile
+       version=release/alpha
        update=yes
 - name: Install Mailpile Pip Dependencies
   pip: "executable={{ pip }} requirements=/etc/mailpile/requirements.txt state=latest"
