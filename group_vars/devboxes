@@ -1,4 +1,0 @@
-nginx: true
-apache: false
-haproxy: false
-varnish: false
