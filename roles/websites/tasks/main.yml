@@ -18,12 +18,23 @@
   sudo: yes
   command: setfacl -dRm g:admin:rwx /var/www
 - name: Symlink ~/www for all administrators
+  sudo: yes
+  file: src=/var/www
+        dest=/home/{{ item }}/www
+        owner={{ item}}
+        group={{ item }}
+        state=link
+  with_items: administrators | default([])
+  when: "'developer' not in group_names"
+- name: Symlink ~/www (devbox) for all administrators
+  sudo: yes
   file: src=/var/www/shared
         dest=/home/{{ item }}/www
         owner={{ item}}
         group={{ item }}
         state=link
   with_items: administrators | default([])
+  when: "'developer' in group_names"
 
 - name: Ensure the logs folder exists for all sites
   file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}/logs" state=directory
@@ -68,6 +79,7 @@
         state=directory
         owner="{{ item.key | replace('__hostname__', hostname) }}"
         group="{{ item.key | replace('__hostname__', hostname) }}"
+        recurse=yes
   with_dict: websites
   when: "'developer' not in group_names"
 
