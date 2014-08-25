@@ -56,6 +56,12 @@
   notify:
   - restart apache2
 
+- name: Ensure sessions folder exists
+  file: path={{ php_sessions }} state=directory mode=1733
+  notify:
+  - restart apache2
+  - restart php-fpm
+
 - name: Run PHP FPM Tasks
   include: fpm.yml
   when: nginx
