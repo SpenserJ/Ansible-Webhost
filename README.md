@@ -5,5 +5,7 @@ This package contains an Ansible playbook for configuring a Debian or CentOS hos
 ## To Do
 
 * We cannot provision a fresh machine **with** our user so we must connect as vagrant, and we cannot clone websites **without** our user. How do we connect as one for the first role, and another for the remainder?
-* Customizable website configs for Apache, via vars
+* New users don't have a password, and Root must be used to set the password first
+* Customizable website configs for Apache/Nginx/PHP, via vars
 * Develop/test MySQL Master/Slave configuration and replication
+* Deploy SSL certificate for Nginx/Haproxy when deploying a site with SSL
