@@ -6,9 +6,12 @@
   action: "{{ packager }} pkg=graphviz state=present"
 - name: Install Man
   action: "{{ packager }} pkg=man state=present"
-- name: Copy setup-site Application
-  copy: src=setup-site dest=/usr/bin/setup-site owner=root group=root mode=0755
-- name: Copy setup-database Application
-  copy: src=setup-database dest=/usr/bin/setup-database owner=root group=root mode=0755
-- name: Copy setup-xdebug Application
-  copy: src=setup-xdebug dest=/usr/bin/setup-xdebug owner=root group=root mode=0755
+- name: Clone setup-site application
+  git: repo=https://github.com/SpenserJ/Webhost-Setup-Site-Scripts.git
+       dest=/usr/local/bin/setup-site
+- name: Install setup-site dependencies
+  npm: path=/usr/local/bin/setup-site state=latest
+- name: Symlink setup-site Application
+  file: src=/usr/local/bin/setup-site/setup-site
+        path=/usr/bin/setup-site
+        state=link
