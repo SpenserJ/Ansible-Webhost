@@ -18,3 +18,11 @@
   with_items:
   - "{{ haproxy_port }}"
   - "{{ haproxy_ssl_port }}"
+
+- name: Check if Logstash Forwarder has been installed
+  stat: path=/etc/logstash-forwarder.d/
+  register: logstash_enabled
+- name: Enable Logstash config for access and error logs
+  sudo: yes
+  template: src=logstash.j2 dest=/etc/logstash-forwarder.d/haproxy
+  when: logstash_enabled.stat.isdir is defined and logstash_enabled.stat.isdir == true

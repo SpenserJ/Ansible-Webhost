@@ -84,4 +84,4 @@
 - name: Enable Logstash config for access and error logs
   sudo: yes
   template: src=logstash.j2 dest=/etc/logstash-forwarder.d/websites
-  when: logstash_enabled.stat.exists
+  when: logstash_enabled.stat.isdir is defined and logstash_enabled.stat.isdir == true
