@@ -726,7 +726,11 @@ auto_globals_jit = On
 
 ; Maximum size of POST data that PHP will accept.
 ; http://www.php.net/manual/en/ini.core.php#ini.post-max-size
+{% if 'developer' in group_names %}
+post_max_size = 1024M
+{% else %}
 post_max_size = 8M
+{% endif %}
 
 ; Magic quotes are a preprocessing feature of PHP where PHP will attempt to
 ; escape any character sequences in GET, POST, COOKIE and ENV data which might
@@ -875,7 +879,11 @@ file_uploads = On
 
 ; Maximum allowed size for uploaded files.
 ; http://www.php.net/manual/en/ini.core.php#ini.upload-max-filesize
+{% if 'developer' in group_names %}
+upload_max_filesize = 1024M
+{% else %}
 upload_max_filesize = 2M
+{% endif %}
 
 ;;;;;;;;;;;;;;;;;;
 ; Fopen wrappers ;

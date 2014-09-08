@@ -3,7 +3,8 @@ websites: {
     domain: "phpmyadmin.__hostname__",
     git: { repo: "https://github.com/phpmyadmin/phpmyadmin.git", branch: "MAINT_4_0_10" },
     overrides: 'phpmyadmin',
-    type: 'php'
+    type: 'php',
+    nginx_tweak: 'client_max_body_size 1024m;'
   }
 }
 nginx_host: 127.0.0.1

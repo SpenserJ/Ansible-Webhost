@@ -16,6 +16,10 @@ server {
   include conf.d/includes/php-fpm.conf;
 {% endif %}
 
+{% if item.value.nginx_tweak is defined %}
+{{ item.value.nginx_tweak }}
+{% endif %}
+
   location @php {
     include       /etc/nginx/fastcgi_params;
 {% if 'developer' not in group_names %}
