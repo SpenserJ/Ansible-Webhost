@@ -29,7 +29,7 @@
   notify: Restart SSHD
 - name: Limit Allowed Users
   lineinfile: dest=/etc/ssh/sshd_config
-              line="AllowUsers {{ administrators|join(' ') }}"
+              line="AllowUsers {{ administrators | default([]) | join(' ') }} {{ ssh_allow_nonadmins | default([]) | join(' ') }}"
               regexp=^#?AllowUsers
   when: "administrators[0] is defined"
   notify: Restart SSHD
