@@ -1,4 +1,12 @@
 server {
+  server_name www.{{ item.key | replace('__hostname__', hostname) }};
+  listen {{ nginx_port }};
+  listen {{ nginx_spdy_port }} spdy;
+
+  rewrite ^ $scheme://{{ item.key | replace('__hostname__', hostname) }}:$request_uri permanent;
+}
+
+server {
   server_name {{ item.key | replace('__hostname__', hostname) }};
   listen {{ nginx_port }};
   listen {{ nginx_spdy_port }} spdy;
