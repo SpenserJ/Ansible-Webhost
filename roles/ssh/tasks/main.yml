@@ -4,8 +4,13 @@
 - name: Ensure the admin group exists
   group: name=admin
 
+- name: Hash the password
+  command: mkpasswd --method=SHA-512 "{{ default_password }}"
+  when: default_password is defined
+  register: encrypted_password
+
 - name: Create the admin accounts
-  user: name={{ item }} append=yes groups='admin'
+  user: name={{ item }} append=yes groups='admin' password={{ encrypted_password.stdout | default('') }} update_password=on_create
   with_items: administrators | default([])
 - name: Copy SSH Keys
   authorized_key: user={{ item }} key="{{ lookup('file', 'keys/' + item + '.pub') }}"
