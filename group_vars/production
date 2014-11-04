@@ -1,5 +1,5 @@
 management_ips: [ '184.71.62.238' ]
-administrators: [ 'spenser', 'johan' ]
+administrators: [ 'spenser' ]
 ssh_allow_nonadmins: [ 'automatedbackups' ]
 haproxy_port: 80
 haproxy_ssl_port: 443

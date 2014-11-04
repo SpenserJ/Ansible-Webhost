@@ -1,5 +1,5 @@
 management_ips: [ '10.0.0.0/24' ]
-administrators: [ 'ben', 'chad', 'johan', 'mike', 'spenser' ]
+administrators: [ 'spenser' ]
 websites: {
   "__hostname__": {
     domain: "__hostname__",
