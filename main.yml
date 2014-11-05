@@ -5,8 +5,18 @@
   roles:
   - firewall
   - ssh
+
+- hosts: all
+  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+  sudo: True
+  roles:
   - base
   - git
+
+- hosts: webserver
+  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+  roles:
+  - websites
 
 - hosts: webserver
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
@@ -18,11 +28,6 @@
   - { role: haproxy, when: haproxy == true }
   - { role: apache2, when: apache  == true }
   - php
-
-- hosts: webserver
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
-  roles:
-  - websites
 
 - hosts: database
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
