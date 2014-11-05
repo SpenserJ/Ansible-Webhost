@@ -12,6 +12,7 @@
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
   roles:
+  - ssl
   - { role: nginx,   when: nginx   == true }
   - { role: varnish, when: varnish == true }
   - { role: haproxy, when: haproxy == true }

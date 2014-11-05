@@ -1,7 +1,4 @@
 ---
-- name: Ensure /etc/ssl/webserver-certs/ exists
-  file: path=/etc/ssl/webserver-certs state=directory owner=root group=root
-
 - name: Install dependencies
   action: "{{ packager }} pkg={{ item }} state=present"
   with_items:
