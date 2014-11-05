@@ -41,7 +41,7 @@ defaults
 frontend front_web
   bind *:{{ haproxy_port }}
 {%- for domain, settings in websites.iteritems() %}
-{% if settings.ssl | default(false) %}  bind *:{{ haproxy_ssl_port}} ssl crt /etc/ssl/webserver-certs/{{ domain | replace('__hostname__', hostname) }}.crt{% endif %}
+{% if settings.ssl | default(false) %}  bind *:{{ haproxy_ssl_port}} ssl crt /etc/ssl/webserver-certs/{{ domain | replace('__hostname__', hostname) }}.crt no-sslv3{% endif %}
 {% endfor %}
 
   # Add a header for which protocol has been forwarded
