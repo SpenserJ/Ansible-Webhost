@@ -30,5 +30,8 @@
               insertbefore=BOF
   when: ansible_os_family == 'RedHat'
 
+- name: Set Hostname in /etc/hosts
+  lineinfile: "dest=/etc/hosts line='127.0.0.1 {{ hostname }}'"
+
 - name: Set timezone to America/Edmonton
   file: path=/etc/localtime src=/usr/share/zoneinfo/America/Edmonton state=link force=yes
