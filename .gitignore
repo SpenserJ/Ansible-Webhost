@@ -4,3 +4,4 @@ roles/ssh/files/keys
 host_vars
 website_overrides/
 inventory/config.php
+ssl_certs
