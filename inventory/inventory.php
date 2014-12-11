@@ -58,15 +58,10 @@ function processHostVars($host, $settings) {
     }
 
     // Handle any hostname replacement on the domain name
-    $website['domain'] = str_replace('__hostname__', $host, $domain);
+    $website['domain'] = str_replace('__hostname__', $settings['hostname'], $domain);
 
     // Set a user for this site to run as
     $website['user'] = substr($website['domain'], 0, 32);
-
-    // Ensure an SSL variable is set
-    if (isset($website['ssl']) === false) {
-      $website['ssl'] = false;
-    }
   }
   $settings['websites'] = array_values($settings['websites']);
 

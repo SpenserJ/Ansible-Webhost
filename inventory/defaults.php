@@ -38,11 +38,11 @@ $default_host_types = array(
     'nginx_port' => 8081,
     'nginx_spdy_port' => 8082,
 
-    'haproxy' => false,
+    'haproxy' => true,
     'haproxy_port' => 80,
     'haproxy_ssl_port' => 443,
 
-    'varnish' => false,
+    'varnish' => true,
     'varnish_port' => 8080,
   ),
 

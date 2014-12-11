@@ -1,9 +1,4 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
-- name: Load Apache role's vars for this distro
-  include_vars: "roles/apache2/vars/{{ ansible_os_family }}.yml"
-
 - name: Ensure the /var/www folder exists
   sudo: yes
   file: path=/var/www state=directory
@@ -37,50 +32,50 @@
   when: "'development' in group_names"
 
 - name: Ensure the logs folder exists for all sites
-  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}/logs" state=directory
-  with_dict: websites
+  file: path="/var/www/{{ item.domain }}/logs" state=directory
+  with_items: websites
 - name: Ensure the public_html folder exists for all sites
-  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html" state=directory
-  with_dict: websites
+  file: path="/var/www/{{ item.domain }}/public_html" state=directory
+  with_items: websites
 
 - name: Clone Git
-  git: repo="{{ item.value.git.repo }}"
-       version="{{ item.value.git.branch | default('master') }}"
-       dest="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html"
+  git: repo="{{ item.git.repo }}"
+       version="{{ item.git.branch | default('master') }}"
+       dest="/var/www/{{ item.domain }}/public_html"
        accept_hostkey=yes
        update=no
-  when: item.value.git is defined
-  with_dict: websites
+  when: item.git is defined
+  with_items: websites
 
 - name: Copy any customized files into the site
-  copy: src="website_overrides/{{ item.value.overrides }}/"
-        dest="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html"
-  when: item.value.overrides is defined
-  with_dict: websites
+  copy: src="website_overrides/{{ item.overrides }}/"
+        dest="/var/www/{{ item.domain }}/public_html"
+  when: item.overrides is defined
+  with_items: websites
 
 - name: Create a group for each site
   sudo: yes
-  group: name="{{ item.key | replace('__hostname__', hostname) }}" system=yes
-  with_dict: websites
+  group: name="{{ item.user }}" system=yes
+  with_items: websites
   when: "'development' not in group_names"
 
 - name: Create a user for each site
   sudo: yes
-  user: name="{{ item.key | replace('__hostname__', hostname) }}"
-        group="{{ item.key | replace('__hostname__', hostname) }}"
+  user: name="{{ item.user }}"
+        group="{{ item.user }}"
         system=yes
         createhome=no
-  with_dict: websites
+  with_items: websites
   when: "'development' not in group_names"
 
 - name: Ensure files are owned by the correct user
   sudo: yes
-  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}"
+  file: path="/var/www/{{ item.domain }}"
         state=directory
-        owner="{{ item.key | replace('__hostname__', hostname) }}"
-        group="{{ item.key | replace('__hostname__', hostname) }}"
+        owner="{{ item.user }}"
+        group="{{ item.user }}"
         recurse=yes
-  with_dict: websites
+  with_items: websites
   when: "'development' not in group_names"
 
 - name: Enable sites folder in Apache
