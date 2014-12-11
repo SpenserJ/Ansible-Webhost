@@ -7,11 +7,11 @@
   - restart php-fpm
 - name: Configure a PHP FPM Pool for each website
   template: src=pool.conf.j2
-            dest="/etc/php5/fpm/pool.d/{{ item.key | replace('__hostname__', hostname) }}.conf"
-  with_dict: websites
+            dest="/etc/php5/fpm/pool.d/{{ item.domain }}.conf"
+  with_items: websites
   when: "'development' not in group_names"
   notify: restart php-fpm
 - name: Configure a default pool for development environments
   template: src=pool.conf.j2
             dest=/etc/php5/fpm/pool.d/www.conf
-  with_dict: { "www": {} }
+  with_items: [ { domain: "www" } ]
