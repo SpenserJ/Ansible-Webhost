@@ -48,7 +48,7 @@ LoadModule mpm_prefork_module {{ module_folder }}/mod_mpm_prefork.so
 LoadModule access_compat_module {{ module_folder }}/mod_access_compat.so
 {% endif %}
 
-{% if 'developer' not in group_names %}
+{% if 'development' not in group_names %}
 LoadModule mpm_itk_module {{ module_folder }}/mpm_itk.so
 {% endif %}
 
@@ -190,7 +190,7 @@ NameVirtualHost *:{{ apache_port }}
 # Load any additional configs
 Include {{ apache2_conf_folder }}/*.conf
 
-{% if 'developer' in group_names %}
+{% if 'development' in group_names %}
 <VirtualHost *:{{ apache_port }}>
     ServerName mailblock.{{ hostname }}
     ProxyPassMatch ^/(.*)$ http://localhost:33411/$1

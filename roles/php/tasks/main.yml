@@ -27,7 +27,7 @@
   with_items:
   - "{{ php }}-xhprof"
   - "{{ php_xdebug }}"
-  when: "'developer' in group_names"
+  when: "'development' in group_names"
   notify:
   - restart apache2
 
@@ -47,7 +47,7 @@
   - restart apache2
 - name: Configure xdebug.ini
   copy: src=xdebug.ini dest={{ php_mod_config }}/xdebug.ini
-  when: "'developer' in group_names"
+  when: "'development' in group_names"
   notify:
   - restart apache2
 - name: Enable PHP configuration in Apache

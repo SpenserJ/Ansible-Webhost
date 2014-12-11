@@ -30,7 +30,7 @@ server {
 
   location @php {
     include       /etc/nginx/fastcgi_params;
-{% if 'developer' not in group_names %}
+{% if 'development' not in group_names %}
     fastcgi_pass  unix:/var/run/php5-fpm_{{ item.key | replace('__hostname__', hostname) }}.sock;
 {% else %}
     fastcgi_pass  unix:/var/run/php5-fpm_www.sock;

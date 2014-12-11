@@ -19,7 +19,7 @@
 
 - name: Install Apache2 MPM ITK
   action: "{{ packager }} pkg={{ apache2 }}-mpm-itk state=present"
-  when: "'developer' not in group_names"
+  when: "'development' not in group_names"
 
 - name: Setup Apache Config
   template: src=apache2.conf.j2 dest={{ apache2_conf_path }}
@@ -27,12 +27,12 @@
 
 - name: Setup ExtendedStatus
   copy: src=extendedstatus.conf dest={{ apache2_conf_folder }}/extendedstatus.conf
-  when: "'developer' in group_names"
+  when: "'development' in group_names"
   notify: restart apache2
 
 - name: Create /var/www/shared
   file: path=/var/www/shared state=directory
-  when: "'developer' in group_names"
+  when: "'development' in group_names"
 
 - name: Autostart Apache2
   service: name={{ apache2 }} enabled=yes state=started

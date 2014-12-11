@@ -35,12 +35,12 @@
   roles:
   - mysql
 
-- hosts: developer
+- hosts: development
   vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
   roles:
   - node
-  - developer
+  - development
   - mailblock
 
 - hosts: all

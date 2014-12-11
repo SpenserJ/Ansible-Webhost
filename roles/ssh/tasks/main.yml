@@ -25,7 +25,7 @@
   lineinfile: dest=/etc/ssh/sshd_config
               line="PasswordAuthentication no"
               regexp=^#?PasswordAuthentication
-  when: "'developer' not in group_names or administrators[0] is defined"
+  when: "'development' not in group_names or administrators[0] is defined"
   notify: Restart SSHD
 - name: Enable Agent Forwarding
   lineinfile: dest=/etc/ssh/sshd_config
@@ -43,7 +43,7 @@
   lineinfile: dest=/etc/sudoers
               regexp='^%admin'
               line='%admin ALL=(ALL) NOPASSWD:ALL'
-  when: "'developer' in group_names"
+  when: "'development' in group_names"
 - name: Configure SSH to ForwardAgent when connecting to another devbox
   copy: src=ssh_config dest=/etc/ssh/ssh_config
-  when: "'developer' in group_names"
+  when: "'development' in group_names"

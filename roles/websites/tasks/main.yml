@@ -10,7 +10,7 @@
 - name: Ensure the /var/www/shared folder exists
   sudo: yes
   file: path=/var/www/shared state=directory
-  when: "'developer' in group_names"
+  when: "'development' in group_names"
 - name: Grant g:admin access to /var/www
   sudo: yes
   command: setfacl -Rm g:admin:rwx /var/www
@@ -25,7 +25,7 @@
         group={{ item }}
         state=link
   with_items: administrators | default([])
-  when: "'developer' not in group_names"
+  when: "'development' not in group_names"
 - name: Symlink ~/www (devbox) for all administrators
   sudo: yes
   file: src=/var/www/shared
@@ -34,7 +34,7 @@
         group={{ item }}
         state=link
   with_items: administrators | default([])
-  when: "'developer' in group_names"
+  when: "'development' in group_names"
 
 - name: Ensure the logs folder exists for all sites
   file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}/logs" state=directory
@@ -62,7 +62,7 @@
   sudo: yes
   group: name="{{ item.key | replace('__hostname__', hostname) }}" system=yes
   with_dict: websites
-  when: "'developer' not in group_names"
+  when: "'development' not in group_names"
 
 - name: Create a user for each site
   sudo: yes
@@ -71,7 +71,7 @@
         system=yes
         createhome=no
   with_dict: websites
-  when: "'developer' not in group_names"
+  when: "'development' not in group_names"
 
 - name: Ensure files are owned by the correct user
   sudo: yes
@@ -81,7 +81,7 @@
         group="{{ item.key | replace('__hostname__', hostname) }}"
         recurse=yes
   with_dict: websites
-  when: "'developer' not in group_names"
+  when: "'development' not in group_names"
 
 - name: Enable sites folder in Apache
   sudo: yes

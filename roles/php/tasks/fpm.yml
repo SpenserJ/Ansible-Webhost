@@ -9,7 +9,7 @@
   template: src=pool.conf.j2
             dest="/etc/php5/fpm/pool.d/{{ item.key | replace('__hostname__', hostname) }}.conf"
   with_dict: websites
-  when: "'developer' not in group_names"
+  when: "'development' not in group_names"
   notify: restart php-fpm
 - name: Configure a default pool for development environments
   template: src=pool.conf.j2
