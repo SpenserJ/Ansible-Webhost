@@ -16,6 +16,8 @@ global
   # For more information, see ciphers(1SSL).
   ssl-default-bind-ciphers ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4
 
+  tune.ssl.default-dh-param 2048
+
   # maxconn 512
 
 defaults
@@ -40,8 +42,10 @@ defaults
 
 frontend front_web
   bind *:{{ haproxy_port }}
-{%- for domain, settings in websites.iteritems() %}
-{% if settings.ssl | default(false) %}  bind *:{{ haproxy_ssl_port}} ssl crt /etc/ssl/webserver-certs/{{ domain | replace('__hostname__', hostname) }}.crt no-sslv3{% endif %}
+{% for settings in websites %}
+{% if settings.ssl | default(false) %}
+  bind *:{{ haproxy_ssl_port}} ssl crt /etc/ssl/webserver-certs/{{ settings.domain }}.crt no-sslv3
+{% endif %}
 {% endfor %}
 
   # Add a header for which protocol has been forwarded
@@ -50,8 +54,8 @@ frontend front_web
 
   # Check if the requested host requires SSL
   acl host_needs_ssl hdr(host) -i example.com
-{%- for domain, settings in websites.iteritems() %}
-{% if settings.ssl | default(false) %} {{ domain | replace('__hostname__', hostname) }}{% endif %}
+{%- for settings in websites %}
+{% if settings.ssl | default(false) %} {{ settings.domain }}{% endif %}
 {% endfor %}
 
   # Only redirect to HTTPS if the host needs it, and we're not using it currently
@@ -60,13 +64,13 @@ frontend front_web
   acl static_content path_end .jpg .jpeg .ico .pdf .gif .png .css .js .htm .html
   acl varnish_available nbsrv(back_varnish) ge 1
 
-{% for domain, settings in websites.iteritems() %}
-  # Config for {{ domain | replace('__hostname__', hostname) }}
-  acl host_{{ domain | replace('__hostname__', hostname) }} req.hdr(host) -i {{ domain | replace('__hostname__', hostname) }}
-  acl varnish_available_{{ domain | replace('__hostname__', hostname) }} nbsrv(back_varnish_{{ domain | replace('__hostname__', hostname) }}) ge 1
-  acl web_available_{{ domain | replace('__hostname__', hostname) }} nbsrv(back_web_{{ domain | replace('__hostname__', hostname) }}) ge 1
-  use_backend back_varnish_{{ domain | replace('__hostname__', hostname) }} if static_content host_{{ domain | replace('__hostname__', hostname) }} varnish_available_{{ domain | replace('__hostname__', hostname) }}
-  use_backend back_web_{{ domain | replace('__hostname__', hostname) }} if host_{{ domain | replace('__hostname__', hostname) }} web_available_{{ domain | replace('__hostname__', hostname) }}
+{% for settings in websites %}
+  # Config for {{ settings.domain }}
+  acl host_{{ settings.domain }} req.hdr(host) -i {{ settings.domain }}
+  acl varnish_available_{{ settings.domain }} nbsrv(back_varnish_{{ settings.domain }}) ge 1
+  acl web_available_{{ settings.domain }} nbsrv(back_web_{{ settings.domain }}) ge 1
+  use_backend back_varnish_{{ settings.domain }} if static_content host_{{ settings.domain }} varnish_available_{{ settings.domain }}
+  use_backend back_web_{{ settings.domain }} if host_{{ settings.domain }} web_available_{{ settings.domain }}
 
 {% endfor %}
 
@@ -79,13 +83,13 @@ backend back_varnish
 
 backend back_webserver
   server nginx01 127.0.0.1:8081 check
-{% for domain, settings in websites.iteritems() %}
+{% for settings in websites %}
 
-# Backends for {{ domain | replace('__hostname__', hostname) }}
-backend back_varnish_{{ domain | replace('__hostname__', hostname) }}
-  server varnish_{{ domain | replace('__hostname__', hostname) }} 127.0.0.1:8081 check
-  option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ domain | replace('__hostname__', hostname) }}
-backend back_web_{{ domain | replace('__hostname__', hostname) }}
-  server nginx_{{ domain | replace('__hostname__', hostname) }} 127.0.0.1:8081 check
-  option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ domain | replace('__hostname__', hostname) }}
+# Backends for {{ settings.domain }}
+backend back_varnish_{{ settings.domain }}
+  server varnish_{{ settings.domain }} 127.0.0.1:8081 check
+  option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ settings.domain }}
+backend back_web_{{ settings.domain }}
+  server nginx_{{ settings.domain }} 127.0.0.1:8081 check
+  option httpchk HEAD /fpm-status HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ settings.domain }}
 {% endfor %}
