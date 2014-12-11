@@ -26,14 +26,14 @@
 
 - name: Configure Nginx sites
   template: src=site.conf.j2
-            dest="/etc/nginx/sites-available/{{ item.key | replace('__hostname__', hostname) }}.conf"
-  with_dict: websites
+            dest="/etc/nginx/sites-available/{{ item.domain }}.conf"
+  with_items: websites
   notify: reload nginx
 - name: Enable Nginx Sites
-  file: src="/etc/nginx/sites-available/{{ item.key | replace('__hostname__', hostname) }}.conf"
-        dest="/etc/nginx/sites-enabled/{{ item.key | replace('__hostname__', hostname) }}.conf"
+  file: src="/etc/nginx/sites-available/{{ item.domain }}.conf"
+        dest="/etc/nginx/sites-enabled/{{ item.domain }}.conf"
         state=link
-  with_dict: websites
+  with_items: websites
   notify: reload nginx
 
 - name: Configure Nginx Mailblock site for development
