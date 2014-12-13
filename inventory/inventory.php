@@ -62,6 +62,10 @@ function processHostVars($host, $settings) {
 
     // Set a user for this site to run as
     $website['user'] = substr($website['domain'], 0, 32);
+
+    if (empty($website['ssl']) === false) {
+      $settings['host_ssl'] = true;
+    }
   }
   $settings['websites'] = array_values($settings['websites']);
 

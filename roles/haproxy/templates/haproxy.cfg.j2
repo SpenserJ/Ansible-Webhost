@@ -42,11 +42,11 @@ defaults
 
 frontend front_web
   bind *:{{ haproxy_port }}
-{% for settings in websites %}
-{% if settings.ssl | default(false) %}
-  bind *:{{ haproxy_ssl_port}} ssl crt /etc/ssl/webserver-certs/{{ settings.domain }}.crt no-sslv3
+{% if host_ssl | default(false) %}
+  bind *:{{ haproxy_ssl_port}} ssl 
+  {%- for settings in websites %}{% if settings.ssl | default(false) %} crt /etc/ssl/webserver-certs/{{ settings.domain }}.crt no-sslv3{% endif %}{% endfor %}
+
 {% endif %}
-{% endfor %}
 
   # Add a header for which protocol has been forwarded
   http-request set-header X-Forwarded-Proto http  if !{ ssl_fc }
