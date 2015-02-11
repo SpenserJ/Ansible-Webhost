@@ -1,7 +1,7 @@
 {
   "paths": [
-{% for domain, settings in websites.iteritems() %}
-    "/var/www/{{ domain | replace('__hostname__', hostname) }}/logs/access.log",
+{% for settings in websites %}
+    "/var/www/{{ settings.domain | replace('__hostname__', hostname) }}/logs/access.log",
 {% endfor %}
     "/var/log/nginx/access.log",
     "/var/log/apache2/access.log",
@@ -11,8 +11,8 @@
 },
 {
   "paths": [
-{% for domain, settings in websites.iteritems() %}
-    "/var/www/{{ domain | replace('__hostname__', hostname) }}/logs/error.log",
+{% for settings in websites %}
+    "/var/www/{{ settings.domain | replace('__hostname__', hostname) }}/logs/error.log",
 {% endfor %}
     "/var/log/nginx/error.log",
     "/var/log/apache2/error.log",
