@@ -67,7 +67,7 @@
 - name: Install Mailpile
   git: repo=https://github.com/pagekite/Mailpile.git
        dest=/etc/mailpile
-       version=release/alpha
+       version=release/beta
        update=yes
 - name: Install Mailpile Pip Dependencies
   pip: "executable={{ pip }} requirements=/etc/mailpile/requirements.txt state=latest"
