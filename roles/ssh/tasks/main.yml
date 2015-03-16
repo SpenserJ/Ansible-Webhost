@@ -4,6 +4,8 @@
 - name: Ensure the admin group exists
   group: name=admin
 
+- name: Ensure mkpasswd is installed
+  apt: pkg=whois state=present
 - name: Hash the password
   command: mkpasswd --method=SHA-512 "{{ default_password }}"
   when: default_password is defined
