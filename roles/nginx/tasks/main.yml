@@ -11,6 +11,10 @@
 - name: Configure Nginx includes for sites
   copy: src=conf.d dest=/etc/nginx
   notify: reload nginx
+- name: Configure how we handle standard files, and block robots in development
+  template: src=handle_standard_files.conf.j2
+            dest=/etc/nginx/conf.d/includes/handle_standard_files.conf
+  notify: reload nginx
 - name: Configure who can view the PHP-FPM status and pings
   template: src=can_view_fpm_status.conf.j2
             dest=/etc/nginx/conf.d/can_view_fpm_status.conf
