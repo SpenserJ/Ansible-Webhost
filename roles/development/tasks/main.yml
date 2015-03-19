@@ -9,6 +9,7 @@
 - name: Clone setup-site application
   git: repo=https://github.com/SpenserJ/Webhost-Setup-Site-Scripts.git
        dest=/usr/local/bin/setup-site
+       accept_hostkey=yes
 - name: Install setup-site dependencies
   npm: path=/usr/local/bin/setup-site state=latest
 - name: Symlink setup-site Application
