@@ -17,6 +17,8 @@
   - "{{ php }}-mcrypt"
   - "{{ php }}-gd"
   - "{{ php }}-imap"
+  - "{{ php }}-intl"
+  - "{{ php }}-xmlrpc"
   - "{{ php_dev }}"
   - "{{ php_mysql }}"
   - php-pear
