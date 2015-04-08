@@ -1,5 +1,0 @@
-libxml: libxml2-devel
-libxslt: libxslt-devel
-ruby: ruby-devel
-pip: pip2.7
-rclocal: /etc/rc.d/rc.local

@@ -1,7 +1,6 @@
 ---
 - name: Install Vim
   apt: pkg=vim state=present
-  when: ansible_os_family == "Debian"
 - name: Install GraphViz
   action: "{{ packager }} pkg=graphviz state=present"
 - name: Install Man

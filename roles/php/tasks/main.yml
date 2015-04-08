@@ -6,7 +6,6 @@
 
 - name: Get PHP PPA
   apt_repository: repo="ppa:ondrej/php5"
-  when: ansible_os_family == "Debian"
 
 - name: Install PHP
   action: "{{ packager }} pkg={{ php }} state=present"
@@ -32,15 +31,6 @@
   when: "'development' in group_names"
   notify:
   - restart apache2
-
-
-- name: Install PHP 5.3 Extensions
-  action: "{{ packager }} pkg={{ php }}-{{ item }} state=present"
-  with_items:
-  - mbstring
-  - pdo
-  - xml
-  when: ansible_os_family == "RedHat"
 
 - name: Configure php.ini
   template: src=php.ini.j2 dest=/etc/php.ini

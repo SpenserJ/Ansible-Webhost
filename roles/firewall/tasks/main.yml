@@ -2,22 +2,6 @@
 - name: Run the Firewall Install tasks
   include: install.yml
 
-- name: Check whether IPTables is managed by Ansible
-  stat: path=/etc/sysconfig/iptables.ansible
-  register: iptables_via_ansible
-  when: ansible_os_family == 'RedHat'
-- name: Reset default IPTables rules
-  copy: src=iptables dest=/etc/sysconfig/iptables
-  when: ansible_os_family == 'RedHat' and iptables_via_ansible.stat.exists == false
-  notify: restart iptables
-- name: Reset default IP6Tables rules
-  copy: src=iptables dest=/etc/sysconfig/ip6tables
-  when: ansible_os_family == 'RedHat' and iptables_via_ansible.stat.exists == false
-  notify: restart ip6tables
-- name: Mark IPTables as managed by Ansible
-  file: path=/etc/sysconfig/iptables.ansible state=touch
-  when: ansible_os_family == 'RedHat' and iptables_via_ansible.stat.exists == false
-
 # Insert our allowed IPs as the first entries
 - name: Allow select IPs unrestricted SSH access
   ufw: rule=allow port=22 src={{ item }}

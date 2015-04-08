@@ -1,6 +1,6 @@
 # Ansible Webhost
 
-This package contains an Ansible playbook for configuring a Debian or CentOS host with a combination of Apache, PHP, and MySQL. The host will have UFW/IPTables running, and websites can be deployed via Git automatically.
+This package contains an Ansible playbook for configuring a Debian host with a combination of Nginx, PHP, and MySQL. The host will have UFW/IPTables running, and websites can be deployed via Git automatically.
 
 ## Requirements
 
