@@ -1,3 +1,0 @@
-mysql_service: mysql
-mysql_config_path: /etc/mysql/my.cnf
-mysql_python: python-mysqldb

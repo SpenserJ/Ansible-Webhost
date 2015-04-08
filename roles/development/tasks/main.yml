@@ -2,9 +2,9 @@
 - name: Install Vim
   apt: pkg=vim state=present
 - name: Install GraphViz
-  action: "{{ packager }} pkg=graphviz state=present"
+  apt: pkg=graphviz state=present
 - name: Install Man
-  action: "{{ packager }} pkg=man state=present"
+  apt: pkg=man state=present
 - name: Clone setup-site application
   git: repo=https://github.com/SpenserJ/Webhost-Setup-Site-Scripts.git
        dest=/usr/local/bin/setup-site

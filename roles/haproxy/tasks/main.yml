@@ -1,6 +1,6 @@
 ---
 - name: Install dependencies
-  action: "{{ packager }} pkg={{ item }} state=present"
+  apt: pkg={{ item }} state=present
   with_items:
   - libpcre3-dev
   - zlib1g-dev

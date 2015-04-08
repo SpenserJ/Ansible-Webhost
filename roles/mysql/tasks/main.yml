@@ -1,12 +1,10 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
 - name: Install MySQL
-  action: "{{ packager }} pkg=mysql-server state=present"
+  apt: pkg=mysql-server state=present
 - name: Run MySQL on boot
-  service: name={{ mysql_service }} enabled=yes state=started
+  service: name=mysql enabled=yes state=started
 - name: Install MySQL-python
-  action: "{{ packager }} pkg={{ mysql_python }} state=present"
+  apt: pkg=python-mysqldb state=present
 
 - name: Check for /root/.my.cnf
   stat: path=/root/.my.cnf
