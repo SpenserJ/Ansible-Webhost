@@ -23,7 +23,6 @@ $default_host_types = array(
       ),
     ),
     'nginx' => true,
-    'apache' => false,
     'haproxy' => false,
     'varnish' => false,
   ),
@@ -33,7 +32,6 @@ $default_host_types = array(
     'administrators' => array('spenser'),
     'ssh_allow_nonadmins' => array('automatedbackups'),
 
-    'apache' => false,
     'nginx' => true,
     'nginx_port' => 8081,
     'nginx_spdy_port' => 8082,

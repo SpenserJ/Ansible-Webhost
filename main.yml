@@ -22,7 +22,6 @@
   - { role: nginx,   when: nginx   == true }
   - { role: varnish, when: varnish == true }
   - { role: haproxy, when: haproxy == true }
-  - { role: apache2, when: apache  == true }
   - php
 
 - hosts: database

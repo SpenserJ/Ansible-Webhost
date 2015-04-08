@@ -4,8 +4,6 @@
     "/var/www/{{ settings.domain | replace('__hostname__', hostname) }}/logs/access.log",
 {% endfor %}
     "/var/log/nginx/access.log",
-    "/var/log/apache2/access.log",
-    "/var/log/httpd/access.log"
   ],
   "fields": { "type": "website_access" }
 },
@@ -15,8 +13,6 @@
     "/var/www/{{ settings.domain | replace('__hostname__', hostname) }}/logs/error.log",
 {% endfor %}
     "/var/log/nginx/error.log",
-    "/var/log/apache2/error.log",
-    "/var/log/httpd/error.log"
   ],
   "fields": { "type": "website_error" }
 }

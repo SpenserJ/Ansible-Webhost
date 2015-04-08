@@ -9,7 +9,7 @@ This package contains an Ansible playbook for configuring a Debian host with a c
 ## To Do
 
 * We cannot provision a fresh machine **with** our user so we must connect as vagrant, and we cannot clone websites **without** our user. How do we connect as one for the first role, and another for the remainder?
-* Customizable website configs for Apache/Nginx/PHP, via vars
+* Customizable website configs for Nginx/PHP, via vars
 * Develop/test MySQL Master/Slave configuration and replication
 * Set up a root MySQL password for each server, instead of reusing a single password
 * [Potentially Solved] - Deploy SSL certificate for Nginx/Haproxy when deploying a site with SSL

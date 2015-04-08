@@ -78,13 +78,6 @@
   with_items: websites
   when: "'development' not in group_names"
 
-- name: Enable sites folder in Apache
-  sudo: yes
-  template: src=sites.conf.j2 dest="{{ apache2_conf_folder }}/sites.conf"
-  when: apache == true
-  notify:
-  - restart apache2
-
 - name: Check if Logstash Forwarder has been installed
   stat: path=/etc/logstash-forwarder.d/
   register: logstash_enabled

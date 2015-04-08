@@ -1,8 +1,0 @@
-php: php5
-php_xdebug: php5-xdebug
-php_dev: php5-dev
-php_mysql: php5-mysql
-php_mod_config: /etc/php5/apache2/conf.d
-php_sessions: /var/lib/php5/sessions
-pear_folder: /usr/share/php
-apache2: apache2

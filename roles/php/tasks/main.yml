@@ -3,50 +3,39 @@
   apt_repository: repo="ppa:ondrej/php5"
 
 - name: Install PHP
-  action: "{{ packager }} pkg={{ php }} state=present"
+  apt: pkg=php5 state=present
 - name: Install PHP Extensions
-  action: "{{ packager }} pkg={{ item }} state=present"
+  apt: pkg={{ item }} state=present
   with_items:
-  - "{{ php }}-curl"
-  - "{{ php }}-mcrypt"
-  - "{{ php }}-gd"
-  - "{{ php }}-imap"
-  - "{{ php }}-intl"
-  - "{{ php }}-xmlrpc"
-  - "{{ php_dev }}"
-  - "{{ php_mysql }}"
+  - "php5-curl"
+  - "php5-mcrypt"
+  - "php5-gd"
+  - "php5-imap"
+  - "php5-intl"
+  - "php5-xmlrpc"
+  - "php5-dev"
+  - "php5-mysql"
   - php-pear
   notify:
-  - restart apache2
+  - restart php-fpm
 - name: Install PHP Extensions for Developers
-  action: "{{ packager }} pkg={{ item }} state=present"
+  apt: pkg={{ item }} state=present
   with_items:
-  - "{{ php }}-xhprof"
-  - "{{ php_xdebug }}"
+  - "php5-xhprof"
+  - "php5-xdebug"
   when: "'development' in group_names"
   notify:
-  - restart apache2
+  - restart php-fpm
 
-- name: Configure php.ini
-  template: src=php.ini.j2 dest=/etc/php.ini
-  when: apache
-  notify:
-  - restart apache2
 - name: Configure xdebug.ini
   copy: src=xdebug.ini dest={{ php_mod_config }}/xdebug.ini
   when: "'development' in group_names"
   notify:
-  - restart apache2
-- name: Enable PHP configuration in Apache
-  template: src=php5.conf.j2 dest="{{ apache2_conf_folder }}/php5.conf"
-  when: apache
-  notify:
-  - restart apache2
+  - restart php-fpm
 
 - name: Ensure sessions folder exists
   file: path={{ php_sessions }} state=directory mode=1733
   notify:
-  - restart apache2
   - restart php-fpm
 
 - name: Run PHP FPM Tasks
