@@ -3,7 +3,7 @@ server {
   listen {{ nginx_port }};
   listen {{ nginx_spdy_port }} spdy;
 
-  rewrite ^ $scheme://{{ item.domain }}:$request_uri permanent;
+  rewrite ^ $scheme://{{ item.domain }}$request_uri permanent;
 }
 
 server {
