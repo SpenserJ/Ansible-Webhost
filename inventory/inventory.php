@@ -60,11 +60,27 @@ function processHostVars($host, $settings) {
     // Handle any hostname replacement on the domain name
     $website['domain'] = str_replace('__hostname__', $settings['hostname'], $domain);
 
+    if (empty($website['ssl']) === false) {
+      $settings['host_ssl'] = true;
+    }
+
+    if (empty($website['use_www']) === TRUE) {
+      $website['use_www'] = (strtolower(substr($website['domain'], 0, 4)) === 'www.');
+    }
+
+    // Strip www. off the domain before we set everything up.
+    if (strtolower(substr($website['domain'], 0, 4)) === 'www.') {
+      $website['domain'] = substr($website['domain'], 4);
+    }
+
     // Set a user for this site to run as
     $website['user'] = substr($website['domain'], 0, 32);
 
-    if (empty($website['ssl']) === false) {
-      $settings['host_ssl'] = true;
+    if ($website['use_www'] === FALSE) {
+      $website['domain_redirected'] = 'www.' . $website['domain'];
+    } else {
+      $website['domain_redirected'] = $website['domain'];
+      $website['domain'] = 'www.' . $website['domain'];
     }
   }
   $settings['websites'] = array_values($settings['websites']);

@@ -1,5 +1,5 @@
 server {
-  server_name www.{{ item.domain }};
+  server_name {{ item.domain_redirected }};
   listen {{ nginx_port }};
   listen {{ nginx_spdy_port }} spdy;
 
