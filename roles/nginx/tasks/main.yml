@@ -6,6 +6,10 @@
 - name: Configure nginx.conf
   copy: src=nginx.conf dest=/etc/nginx/nginx.conf
   notify: restart nginx
+- name: Configure fastcgi_params
+  template: src=fastcgi_params.j2
+            dest=/etc/nginx/fastcgi_params
+  notify: reload nginx
 - name: Configure Nginx includes for sites
   copy: src=conf.d dest=/etc/nginx
   notify: reload nginx
