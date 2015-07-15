@@ -16,6 +16,7 @@
   - "php5-dev"
   - "php5-mysql"
   - php-pear
+  - mysql-client
   notify:
   - restart php-fpm
 - name: Install PHP Extensions for Developers
