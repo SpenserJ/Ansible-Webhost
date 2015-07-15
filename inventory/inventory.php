@@ -35,7 +35,7 @@ function processHostVars($host, $settings) {
   }
 
   // Is this server a database?
-  if (isset($settings['database']) === true && $settings['database'] === true) {
+  if (isset($settings['database']) === true && $settings['database'] !== FALSE) {
     $config['database']['hosts'][] = $host;
     $settings = getHostDefaults('database', $settings);
   }

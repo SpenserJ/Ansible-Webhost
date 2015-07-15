@@ -58,4 +58,10 @@ $default_host_types = array(
       ),
     ),
   ),
+
+  'database' => array(
+    'database' => array(
+      'exposed' => FALSE,
+    ),
+  ),
 );

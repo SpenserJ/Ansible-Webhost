@@ -58,6 +58,11 @@
   template: src=my.cnf.j2 dest=/etc/mysql/conf.d/z_ansible.cnf
   notify: Restart MySQL
 
+- name: Allow MySQL connections from external IPs
+  ufw: rule=allow port=3306 src={{ item }}
+  with_items: database.exposed
+  when: database.exposed != false
+
 - name: Allow MySQL connections from other devboxes
   ufw: rule=allow port=3306 src=10.0.0.0/24
   when: "'development' in group_names"

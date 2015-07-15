@@ -1,5 +1,7 @@
 [mysqld]
 max_allowed_packet = 16M
+# Bind to all interfaces, since we block access with UFW.
+bind-address = 0.0.0.0
 
 {% if mysql_master == true %}
 # MySQL Master
