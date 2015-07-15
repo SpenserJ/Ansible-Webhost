@@ -1,9 +1,10 @@
 <?php
 
 function getHostDefaults($type, $host) {
-  global $default_host_types;
-  if (empty($default_host_types[$type]) === true) { return $host; }
-  return array_replace_recursive($default_host_types[$type], $host);
+  global $generic_host, $default_host_types, $groups;
+  $default_group = empty($default_host_types[$type]) ? array() : $default_host_types[$type];
+  $custom_group = empty($groups[$type]) ? array() : $groups[$type];
+  return array_replace_recursive($default_group, $custom_group, $host);
 }
 
 $config = array(
@@ -11,10 +12,14 @@ $config = array(
   ),
 );
 
+$generic_host = array(
+  'administrators' => array(),
+  'ssh_allow_nonadmins' => array(),
+  'management_ips' => array(),
+);
+
 $default_host_types = array(
   'development' => array(
-    'management_ips' => array('10.0.0.0/24'),
-    'administrators' => array('spenser'),
     'websites' => array(
       '__hostname__' => array(
         'git' => array(
@@ -28,10 +33,6 @@ $default_host_types = array(
   ),
 
   'production' => array(
-    'management_ips' => array('184.71.62.238'),
-    'administrators' => array('spenser'),
-    'ssh_allow_nonadmins' => array('automatedbackups'),
-
     'nginx' => true,
     'nginx_port' => 8081,
     'nginx_spdy_port' => 8082,
