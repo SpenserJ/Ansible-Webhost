@@ -62,6 +62,12 @@
   - [ "{{ nginx_port }}", "{{ nginx_spdy_port }}" ]
   - management_ips
   when: varnish
+- name: When Varnish is used, also allow access to Nginx from loadbalancers
+  ufw: rule=allow port={{ item[0] }} from_ip={{ item[1] }}
+  with_nested:
+  - [ "{{ nginx_port }}", "{{ nginx_spdy_port }}" ]
+  - loadbalancer
+  when: varnish and loadbalancer is defined
 - name: When Varnish is disabled, allow unrestricted access to Nginx
   ufw: rule=allow port={{ item[0] }}
   with_nested:
