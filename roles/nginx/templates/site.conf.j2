@@ -1,29 +1,43 @@
 server {
-  server_name {{ item.key | replace('__hostname__', hostname) }};
+  server_name {{ item.domain_redirected }};
   listen {{ nginx_port }};
   listen {{ nginx_spdy_port }} spdy;
 
-  root          /var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html;
-  access_log    /var/www/{{ item.key | replace('__hostname__', hostname) }}/logs/access.log;
-  error_log     /var/www/{{ item.key | replace('__hostname__', hostname) }}/logs/error.log;
+  rewrite ^ $scheme://{{ item.domain }}$request_uri permanent;
+}
+
+server {
+  server_name {{ item.domain }};
+  listen {{ nginx_port }};
+  listen {{ nginx_spdy_port }} spdy;
+
+  root          /var/www/{{ item.domain }}/public_html;
+  access_log    /var/www/{{ item.domain }}/logs/access.log;
+  error_log     /var/www/{{ item.domain }}/logs/error.log;
 
   index index.php index.html index.htm;
 
   include conf.d/includes/handle_standard_files.conf;
-{% if item.value.type is defined and item.value.type == 'drupal7' %}
+{% if item.type is defined and item.type == 'drupal7' %}
   include conf.d/includes/drupal.conf;
 {% else %}
   include conf.d/includes/php-fpm.conf;
 {% endif %}
 
+{% if item.nginx_tweak is defined %}
+{{ item.nginx_tweak }}
+{% endif %}
+
   location @php {
     include       /etc/nginx/fastcgi_params;
-{% if 'developer' not in group_names %}
-    fastcgi_pass  unix:/var/run/php5-fpm_{{ item.key | replace('__hostname__', hostname) }}.sock;
+{% if 'development' not in group_names %}
+    fastcgi_pass  unix:/var/run/php5-fpm_{{ item.domain }}.sock;
 {% else %}
-    fastcgi_pass  unix:/var/run/php5-fpm.sock;
+    fastcgi_pass  unix:/var/run/php5-fpm_www.sock;
 {% endif %}
     fastcgi_param HTTPS $https_proxied;
-    access_log    $log_php_request;
+    if ($log_php_request = 0) {
+      access_log  off;
+    }
   }
 }

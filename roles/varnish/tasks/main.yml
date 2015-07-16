@@ -1,9 +1,17 @@
 ---
 - name: Install Varnish
-  action: "{{ packager }} pkg=varnish state=present"
+  apt: pkg=varnish state=present
 - name: Configure Varnish Daemon
   template: src=varnish_daemon.j2 dest=/etc/default/varnish
   notify: restart varnish
 - name: Configure Varnish VCL
   template: src=default.vcl.j2 dest=/etc/varnish/default.vcl
   notify: reload varnish
+
+- name: When HAProxy is used, only allow access to Varnish from management IPs
+  ufw: rule=allow port={{ varnish_port }} from_ip={{ item }}
+  with_items: management_ips
+  when: haproxy
+- name: When HAProxy is disabled, allow unrestricted access to Varnish
+  ufw: rule=allow port={{ varnish_port }}
+  when: not haproxy

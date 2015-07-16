@@ -31,7 +31,7 @@
   when: needs_upgrade.skipped is not defined
 - name: Uninstall Apt installed versions of Node
   apt: pkg=nodejs state=absent
-  when: needs_upgrade.skipped is not defined and ansible_os_family == 'Debian'
+  when: needs_upgrade.skipped is not defined
 - name: Make install
   shell: make install chdir=/tmp/node-v{{ ensure_node_version }}
   when: needs_upgrade.skipped is not defined

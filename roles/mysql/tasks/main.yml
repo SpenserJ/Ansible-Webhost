@@ -1,12 +1,10 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
 - name: Install MySQL
-  action: "{{ packager }} pkg=mysql-server state=present"
+  apt: pkg=mysql-server state=present
 - name: Run MySQL on boot
-  service: name={{ mysql_service }} enabled=yes state=started
+  service: name=mysql enabled=yes state=started
 - name: Install MySQL-python
-  action: "{{ packager }} pkg={{ mysql_python }} state=present"
+  apt: pkg=python-mysqldb state=present
 
 - name: Check for /root/.my.cnf
   stat: path=/root/.my.cnf
@@ -59,8 +57,12 @@
 - name: Configure MySQL
   template: src=my.cnf.j2 dest=/etc/mysql/conf.d/z_ansible.cnf
   notify: Restart MySQL
-- debug: var=mysql_master
+
+- name: Allow MySQL connections from external IPs
+  ufw: rule=allow port=3306 src={{ item }}
+  with_items: database.exposed
+  when: database.exposed != false
 
 - name: Allow MySQL connections from other devboxes
   ufw: rule=allow port=3306 src=10.0.0.0/24
-  when: "'developer' in group_names"
+  when: "'development' in group_names"

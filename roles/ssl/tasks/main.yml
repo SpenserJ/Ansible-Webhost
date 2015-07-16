@@ -1,0 +1,7 @@
+---
+- name: Ensure /etc/ssl/webserver-certs/ exists
+  file: path=/etc/ssl/webserver-certs state=directory owner=root group=root
+- name: Copy any SSL certificates that are provided by a website
+  copy: src={{ item.ssl }} dest=/etc/ssl/webserver-certs/{{ item.domain }}.crt
+  when: item.ssl is defined
+  with_items: websites

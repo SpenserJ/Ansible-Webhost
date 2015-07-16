@@ -1,3 +1,2 @@
-packager: yum 
+packager: apt
 nginx: true
-apache: false

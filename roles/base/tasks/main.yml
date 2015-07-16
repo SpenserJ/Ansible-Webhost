@@ -1,34 +1,22 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
 - name: Update Apt cache
   apt: update_cache=yes cache_valid_time=3600
-  when: ansible_os_family == 'Debian'
-- name: Get EPEL repository
-  get_url: dest=/tmp/epel-release.rpm  url=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-  when: ansible_os_family == "RedHat"
-- name: Install EPEL repository
-  yum: pkg=/tmp/epel-release.rpm state=installed
-  when: ansible_os_family == "RedHat"
 
 - name: Install packages we depend on
-  action: "{{ packager  }} pkg={{ item }} state=present"
+  apt: pkg={{ item }} state=present
   with_items:
   - acl
   - python-pycurl
   - htop
-  - '{{ build_essential }}'
+  - build-essential
 
 - name: Set Hostname for this boot
   shell: hostname {{ hostname }}
 - name: Set Hostname permanently
   template: src=hostname.j2 dest=/etc/hostname
-- name: Set Hostname for eth1
-  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth1
-              regexp='^DHCP_HOSTNAME={{ hostname }}'
-              line='DHCP_HOSTNAME={{ hostname }}'
-              insertbefore=BOF
-  when: ansible_os_family == 'RedHat'
+
+- name: Set Hostname in /etc/hosts
+  lineinfile: "dest=/etc/hosts line='127.0.0.1 {{ hostname }}'"
 
 - name: Set timezone to America/Edmonton
   file: path=/etc/localtime src=/usr/share/zoneinfo/America/Edmonton state=link force=yes

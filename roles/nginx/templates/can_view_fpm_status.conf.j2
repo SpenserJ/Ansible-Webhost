@@ -1,0 +1,9 @@
+geo $show_fpm_status {
+  default               0; # Deny on all except
+  127.0.0.1             1; # - Loopback
+  192.168.1.0/24        1; # - Internal Network
+
+{% for ip in management_ips %}
+  {{ ip }}   1;
+{% endfor %}
+}

@@ -1,44 +1,42 @@
 ---
 - hosts: all
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
   roles:
   - firewall
   - ssh
+
+- hosts: all
+  sudo: True
+  roles:
   - base
   - git
 
 - hosts: webserver
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
-  sudo: True
-  roles:
-  - { role: nginx,   when: nginx   == true }
-  - { role: varnish, when: varnish == true }
-  - { role: haproxy, when: haproxy == true }
-  - { role: apache2, when: apache  == true }
-  - php
-  - node
-
-- hosts: webserver
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   roles:
   - websites
 
+- hosts: webserver
+  sudo: True
+  roles:
+  - ssl
+  - { role: nginx,   when: nginx   == true }
+  - { role: varnish, when: varnish == true }
+  - { role: haproxy, when: haproxy == true }
+  - php
+
 - hosts: database
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
   roles:
   - mysql
 
-- hosts: developer
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
+- hosts: development
   sudo: True
   roles:
-  - developer
+  - node
+  - development
   - mailblock
 
 - hosts: all
-  vars_files: [ "vars/{{ ansible_os_family }}.yml" ]
   sudo: True
   roles:
   - firewall_save

@@ -1,7 +1,6 @@
 ---
-- name: Install UFW on Debian
+- name: Install UFW
   apt: pkg="ufw" state="present"
-  when: ansible_os_family == 'Debian'
 
 - name: Check if UFW is installed
   stat: path=/usr/sbin/ufw

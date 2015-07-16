@@ -1,0 +1,31 @@
+{% if 'development' in group_names %}
+location = /robots.txt { return 200 "User-agent: *\nDisallow: /"; }
+{% endif %}
+
+## Don't log favicon.ico requests.
+location /favicon.ico {
+  try_files	$uri =205;
+  log_not_found	off;
+  access_log	off;
+}
+
+## Don't log robots.txt requests.
+location /robots.txt {
+  allow		all;
+  log_not_found	off;
+  access_log	off;
+}
+
+# Deny all attempts to access hidden files such as .htaccess, .htpasswd, .DS_Store (Mac).
+location ~ /\. {
+  deny all;
+  access_log off;
+  log_not_found off;
+}
+
+###
+### deny listed requests for security reasons without 403 response
+###
+location ~* (?:delete.+from|insert.+into|select.+from|union.+select|onload|\.php.+src|system\(.+|document\.cookie|\;|\.\.) {
+  return 444;
+}

@@ -1,13 +1,25 @@
 ---
-#- name: Load vars for this distro
-#  include_vars: "{{ ansible_os_family }}.yml"
+- name: Uninstall Apache
+  apt: pkg=apache2 state=absent purge=yes
 - name: Install Nginx
-  action: "{{ packager }} pkg=nginx state=present"
+  apt: pkg=nginx state=present
 - name: Configure nginx.conf
   copy: src=nginx.conf dest=/etc/nginx/nginx.conf
   notify: restart nginx
+- name: Configure fastcgi_params
+  template: src=fastcgi_params.j2
+            dest=/etc/nginx/fastcgi_params
+  notify: reload nginx
 - name: Configure Nginx includes for sites
   copy: src=conf.d dest=/etc/nginx
+  notify: reload nginx
+- name: Configure how we handle standard files, and block robots in development
+  template: src=handle_standard_files.conf.j2
+            dest=/etc/nginx/conf.d/includes/handle_standard_files.conf
+  notify: reload nginx
+- name: Configure who can view the PHP-FPM status and pings
+  template: src=can_view_fpm_status.conf.j2
+            dest=/etc/nginx/conf.d/can_view_fpm_status.conf
   notify: reload nginx
 
 - name: Configure default Nginx site
@@ -22,12 +34,37 @@
 
 - name: Configure Nginx sites
   template: src=site.conf.j2
-            dest="/etc/nginx/sites-available/{{ item.key | replace('__hostname__', hostname) }}.conf"
-  with_dict: websites
+            dest="/etc/nginx/sites-available/{{ item.domain }}.conf"
+  with_items: websites
   notify: reload nginx
 - name: Enable Nginx Sites
-  file: src="/etc/nginx/sites-available/{{ item.key | replace('__hostname__', hostname) }}.conf"
-        dest="/etc/nginx/sites-enabled/{{ item.key | replace('__hostname__', hostname) }}.conf"
+  file: src="/etc/nginx/sites-available/{{ item.domain }}.conf"
+        dest="/etc/nginx/sites-enabled/{{ item.domain }}.conf"
         state=link
-  with_dict: websites
+  with_items: websites
   notify: reload nginx
+
+- name: Configure Nginx Mailblock site for development
+  template: src=site_mailblock.conf.j2
+            dest=/etc/nginx/sites-available/mailblock.conf
+  notify: reload nginx
+  when: "'development' in group_names"
+- name: Enable Nginx mailblock site for development
+  file: src=/etc/nginx/sites-available/mailblock.conf
+        dest=/etc/nginx/sites-enabled/mailblock.conf
+        state=link
+  notify: reload nginx
+  when: "'development' in group_names"
+
+- name: When Varnish is used, only allow access to Nginx from management IPs
+  ufw: rule=allow port={{ item[0] }} from_ip={{ item[1] }}
+  with_nested:
+  - [ "{{ nginx_port }}", "{{ nginx_spdy_port }}" ]
+  - management_ips
+  when: varnish
+- name: When Varnish is disabled, allow unrestricted access to Nginx
+  ufw: rule=allow port={{ item[0] }}
+  with_nested:
+  - "{{ nginx_port }}"
+  - "{{ nginx_spdy_port }}"
+  when: not varnish

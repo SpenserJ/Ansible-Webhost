@@ -1,0 +1,17 @@
+---
+- name: Install Vim
+  apt: pkg=vim state=present
+- name: Install GraphViz
+  apt: pkg=graphviz state=present
+- name: Install Man
+  apt: pkg=man state=present
+- name: Clone setup-site application
+  git: repo=https://github.com/SpenserJ/Webhost-Setup-Site-Scripts.git
+       dest=/usr/local/bin/setup-site
+       accept_hostkey=yes
+- name: Install setup-site dependencies
+  npm: path=/usr/local/bin/setup-site state=latest
+- name: Symlink setup-site Application
+  file: src=/usr/local/bin/setup-site/setup-site
+        path=/usr/bin/setup-site
+        state=link

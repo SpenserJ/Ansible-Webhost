@@ -1,0 +1,9 @@
+server {
+  server_name mailblock.{{ hostname }};
+  listen {{ nginx_port }};
+  listen {{ nginx_spdy_port }} spdy;
+
+  location / {
+    proxy_pass http://localhost:33411;
+  }
+}

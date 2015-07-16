@@ -1,19 +1,15 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
-
-- name: Setup Python 2.7 for RedHat
-  include: redhat.yml
-  when: ansible_os_family == 'RedHat'
-- name: Setup Python 2.7 for Debian
+- name: Setup Python 2.7
   apt: pkg={{ item }}
   with_items:
   - python2.7-dev
   - python-pip
-  when: ansible_os_family == 'Debian'
 
 - name: Ensure Postfix is installed
-  action: "{{ packager }} pkg=postfix"
+  apt: pkg={{ item }}
+  with_items:
+  - postfix
+  - postfix-pcre
 
 # Force emails sent via postfix to go to the root account
 - name: Postfix Virtual Alias Maps
@@ -49,11 +45,11 @@
   notify: restart postfix
 
 - name: Install Mailpile Dependencies
-  action: "{{ packager }} pkg={{ item }}"
+  apt: pkg={{ item }}
   with_items:
-  - "{{ libxml }}"
-  - "{{ libxslt }}"
-  - "{{ ruby }}"
+  - "libxml2-dev"
+  - "libxslt-dev"
+  - "ruby-dev"
 - name: Install Mailpile Gem Dependencies
   gem: name={{ item }} state=present
   with_items:
@@ -64,9 +60,10 @@
 - name: Install Mailpile
   git: repo=https://github.com/pagekite/Mailpile.git
        dest=/etc/mailpile
+       version=release/beta
        update=yes
 - name: Install Mailpile Pip Dependencies
-  pip: "executable={{ pip }} requirements=/etc/mailpile/requirements.txt state=latest"
+  pip: "requirements=/etc/mailpile/requirements.txt state=latest"
 - name: Setup Mailpile
   command: python2.7 /etc/mailpile/mp setup
 - name: Ensure root's Maildir exists
@@ -80,7 +77,7 @@
 - name: Tell Mailpile to update every 30 seconds
   command: python2.7 /etc/mailpile/mp set prefs.rescan_interval = 30
 - name: Start Mailpile automatically
-  lineinfile: dest="{{ rclocal }}"
+  lineinfile: dest="/etc/rc.local"
               line="python2.7 /etc/mailpile/mp"
               insertbefore=BOF
 

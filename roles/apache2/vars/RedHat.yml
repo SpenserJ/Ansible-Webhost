@@ -1,7 +1,0 @@
-apache2: httpd
-apache2_base: /etc/httpd
-apache2_conf_path: "{{ apache2_base }}/conf/httpd.conf"
-apache2_conf_folder: "{{ apache2_base }}/conf.d"
-module_folder: "{{ apache2_base }}/modules"
-apache_user: apache
-apache_pid: run/httpd.pid

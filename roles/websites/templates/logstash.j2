@@ -1,0 +1,18 @@
+{
+  "paths": [
+{% for settings in websites %}
+    "/var/www/{{ settings.domain | replace('__hostname__', hostname) }}/logs/access.log",
+{% endfor %}
+    "/var/log/nginx/access.log",
+  ],
+  "fields": { "type": "website_access" }
+},
+{
+  "paths": [
+{% for settings in websites %}
+    "/var/www/{{ settings.domain | replace('__hostname__', hostname) }}/logs/error.log",
+{% endfor %}
+    "/var/log/nginx/error.log",
+  ],
+  "fields": { "type": "website_error" }
+}

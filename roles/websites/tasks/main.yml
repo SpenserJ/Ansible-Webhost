@@ -1,72 +1,87 @@
 ---
-- name: Load vars for this distro
-  include_vars: "{{ ansible_os_family }}.yml"
-- name: Load Apache role's vars for this distro
-  include_vars: "roles/apache2/vars/{{ ansible_os_family }}.yml"
-
 - name: Ensure the /var/www folder exists
   sudo: yes
   file: path=/var/www state=directory
 - name: Ensure the /var/www/shared folder exists
   sudo: yes
   file: path=/var/www/shared state=directory
-  when: "'developer' in group_names"
+  when: "'development' in group_names"
 - name: Grant g:admin access to /var/www
   sudo: yes
   command: setfacl -Rm g:admin:rwx /var/www
 - name: Grant g:admin default access to /var/www
   sudo: yes
   command: setfacl -dRm g:admin:rwx /var/www
+- name: Symlink ~/www for all administrators
+  sudo: yes
+  file: src=/var/www
+        dest=/home/{{ item }}/www
+        owner={{ item}}
+        group={{ item }}
+        state=link
+  with_items: administrators | default([])
+  when: "'development' not in group_names"
+- name: Symlink ~/www (devbox) for all administrators
+  sudo: yes
+  file: src=/var/www/shared
+        dest=/home/{{ item }}/www
+        owner={{ item}}
+        group={{ item }}
+        state=link
+  with_items: administrators | default([])
+  when: "'development' in group_names"
 
 - name: Ensure the logs folder exists for all sites
-  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}/logs" state=directory
-  with_dict: websites
+  file: path="/var/www/{{ item.domain }}/logs" state=directory
+  with_items: websites
 - name: Ensure the public_html folder exists for all sites
-  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html" state=directory
-  with_dict: websites
+  file: path="/var/www/{{ item.domain }}/public_html" state=directory
+  with_items: websites
 
 - name: Clone Git
-  git: repo="{{ item.value.git.repo }}"
-       version="{{ item.value.git.branch | default('master') }}"
-       dest="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html"
+  git: repo="{{ item.git.repo }}"
+       version="{{ item.git.branch | default('master') }}"
+       dest="/var/www/{{ item.domain }}/public_html"
        accept_hostkey=yes
        update=no
-  when: item.value.git is defined
-  with_dict: websites
+  when: item.git is defined
+  with_items: websites
 
 - name: Copy any customized files into the site
-  copy: src="website_overrides/{{ item.value.overrides }}/"
-        dest="/var/www/{{ item.key | replace('__hostname__', hostname) }}/public_html"
-  when: item.value.overrides is defined
-  with_dict: websites
+  copy: src="website_overrides/{{ item.overrides }}/"
+        dest="/var/www/{{ item.domain }}/public_html"
+  when: item.overrides is defined
+  with_items: websites
 
 - name: Create a group for each site
   sudo: yes
-  group: name="{{ item.key | replace('__hostname__', hostname) }}" system=yes
-  with_dict: websites
-  when: "'developer' not in group_names"
+  group: name="{{ item.user }}" system=yes
+  with_items: websites
+  when: "'development' not in group_names"
 
 - name: Create a user for each site
   sudo: yes
-  user: name="{{ item.key | replace('__hostname__', hostname) }}"
-        group="{{ item.key | replace('__hostname__', hostname) }}"
+  user: name="{{ item.user }}"
+        group="{{ item.user }}"
         system=yes
         createhome=no
-  with_dict: websites
-  when: "'developer' not in group_names"
+  with_items: websites
+  when: "'development' not in group_names"
 
 - name: Ensure files are owned by the correct user
   sudo: yes
-  file: path="/var/www/{{ item.key | replace('__hostname__', hostname) }}"
+  file: path="/var/www/{{ item.domain }}"
         state=directory
-        owner="{{ item.key | replace('__hostname__', hostname) }}"
-        group="{{ item.key | replace('__hostname__', hostname) }}"
-  with_dict: websites
-  when: "'developer' not in group_names"
+        owner="{{ item.user }}"
+        group="{{ item.user }}"
+        recurse=yes
+  with_items: websites
+  when: "'development' not in group_names"
 
-- name: Enable sites folder in Apache
+- name: Check if Logstash Forwarder has been installed
+  stat: path=/etc/logstash-forwarder.d/
+  register: logstash_enabled
+- name: Enable Logstash config for access and error logs
   sudo: yes
-  template: src=sites.conf.j2 dest="{{ apache2_conf_folder }}/sites.conf"
-  when: apache == true
-  notify:
-  - restart apache2
+  template: src=logstash.j2 dest=/etc/logstash-forwarder.d/websites
+  when: logstash_enabled.stat.isdir is defined and logstash_enabled.stat.isdir == true
