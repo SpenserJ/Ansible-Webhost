@@ -1,0 +1,13 @@
+- debug: var={{ database }}
+- name: Create databases
+  mysql_db: name={{ item }} collation=utf8_general_ci encoding=utf8
+  with_items: database.databases
+  when: database.databases is defined
+- name: Create users with privileges
+  mysql_user:
+    name: "{{ item.user }}"
+    host: "{{ item.host }}"
+    priv: "{{ item.privileges }}"
+    password: "{{ item.password }}"
+  with_items: database.users
+  when: database.users is defined
