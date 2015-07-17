@@ -1,7 +1,3 @@
-{% if 'development' in group_names %}
-location = /robots.txt { return 200 "User-agent: *\nDisallow: /"; }
-{% endif %}
-
 ## Don't log favicon.ico requests.
 location /favicon.ico {
   try_files	$uri =205;
