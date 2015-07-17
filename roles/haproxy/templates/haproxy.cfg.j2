@@ -100,7 +100,7 @@ backend back_varnish_{{ settings.domain }}
   server varnish_{{ backend }}_{{ settings.domain }} {{ backend }}:8080 cookie {{ backend }} check
   {%- endfor %}
 
-  option httpchk HEAD / HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ settings.domain }}
+  option httpchk HEAD {{ settings.httpcheck | default ('/') }} HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ settings.domain }}
 backend back_web_{{ settings.domain }}
   cookie SRV_ID insert
   {%- for backend in loadbalancer %}
@@ -108,5 +108,5 @@ backend back_web_{{ settings.domain }}
   server nginx_{{ backend }}_{{ settings.domain }} {{ backend }}:8081 cookie {{ backend }} check
   {%- endfor %}
 
-  option httpchk HEAD / HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ settings.domain }}
+  option httpchk HEAD {{ settings.httpcheck | default ('/') }} HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ settings.domain }}
 {% endfor %}
