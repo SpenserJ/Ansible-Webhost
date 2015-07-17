@@ -26,14 +26,10 @@
   with_items: administrators | default([])
   when: mycnf.stat.exists == false
 
-- name: Set MySQL Root
-  mysql_user: name=root host="{{ item }}" password={{ mysql_root_password }} priv=*.*:ALL,GRANT
-  with_items:
-  - "{{ hostname }}"
-  - "{{ ansible_hostname }}"
-  - 127.0.0.1
-  - ::1
-  - localhost
+- name: Set MySQL Root Password
+  shell: echo "UPDATE mysql.user SET Password = PASSWORD('{{ mysql_root_password }}') WHERE User = 'root'; FLUSH PRIVILEGES;" | mysql -u root
+  register: root_password_result
+  failed_when: "'ERROR' in root_password_result.stderr"
 
 - name: Copy ~/.my.cnf to root
   template: src=my_user.cnf.j2 dest=/root/.my.cnf owner=root group=root mode=0600
