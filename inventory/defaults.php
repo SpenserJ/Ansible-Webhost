@@ -55,6 +55,7 @@ $default_host_types = array(
         ),
         'type' => 'php',
         'nginx_tweak' => 'client_max_body_size 1024m;',
+        'loadbalanced' => FALSE,
       ),
     ),
   ),

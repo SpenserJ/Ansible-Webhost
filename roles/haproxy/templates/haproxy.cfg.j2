@@ -95,18 +95,28 @@ backend back_webserver
 # Backends for {{ settings.domain }}
 backend back_varnish_{{ settings.domain }}
   cookie SRV_ID insert
+  {%- if settings.loadbalanced is not defined or settings.loadbalanced != false %}
   {%- for backend in loadbalancer %}
 
   server varnish_{{ backend }}_{{ settings.domain }} {{ backend }}:8080 cookie {{ backend }} check
   {%- endfor %}
+  {%- else %}
+
+  server varnish_localhost_{{ settings.domain }} localhost:8080 cookie localhost check
+  {%- endif %}
 
   option httpchk HEAD {{ settings.httpcheck | default ('/') }} HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ settings.domain }}
 backend back_web_{{ settings.domain }}
   cookie SRV_ID insert
+  {%- if settings.loadbalanced is not defined or settings.loadbalanced != false %}
   {%- for backend in loadbalancer %}
 
   server nginx_{{ backend }}_{{ settings.domain }} {{ backend }}:8081 cookie {{ backend }} check
   {%- endfor %}
+  {%- else %}
+
+  server varnish_localhost_{{ settings.domain }} localhost:8080 cookie localhost check
+  {%- endif %}
 
   option httpchk HEAD {{ settings.httpcheck | default ('/') }} HTTP/1.1\r\nUser-Agent:HAProxy\r\nHost:{{ settings.domain }}
 {% endfor %}
