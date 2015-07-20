@@ -57,7 +57,7 @@
 - name: Allow MySQL connections from external IPs
   ufw: rule=allow port=3306 src={{ item }}
   with_items: database.exposed
-  when: database.exposed != false
+  when: database.exposed is defined and database.exposed != false
 
 - name: Allow MySQL connections from other devboxes
   ufw: rule=allow port=3306 src=10.0.0.0/24

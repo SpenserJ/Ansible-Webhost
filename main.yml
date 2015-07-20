@@ -34,7 +34,7 @@
   roles:
   - node
   - development
-  - mailblock
+#  - mailblock
 
 - hosts: all
   sudo: True
