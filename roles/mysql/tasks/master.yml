@@ -1,0 +1,8 @@
+---
+- name: Configure the slave users
+  mysql_user: >
+    name="slave_db"
+    host="{{ item.key }}"
+    password="{{ item.value }}"
+    priv=*.*:"REPLICATION SLAVE"
+  with_dict: "{{ mysql_master.slaves | default({}) }}"

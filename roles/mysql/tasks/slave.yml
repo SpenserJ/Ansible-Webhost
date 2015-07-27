@@ -1,0 +1,28 @@
+---
+- name: Check the slave replication status
+  mysql_replication: mode=getslave
+  ignore_errors: true
+  register: slave
+
+- name: Check master replication status
+  mysql_replication: mode=getmaster
+  delegate_to: "{{ mysql_slave.master }}"
+  register: master
+  when: slave|failed
+
+- name: Configure replication on the slave
+  mysql_replication:
+    mode: changemaster
+    master_host: "{{ mysql_slave.master }}"
+    master_user: "slave_db"
+    master_password: "{{ mysql_slave.password }}"
+    master_log_file: "{{ master.File }}"
+    master_log_pos: "{{ master.Position }}"
+  ignore_errors: True
+  when: slave|failed
+
+- name: Start replication
+  mysql_replication: mode=startslave
+  when: slave|failed
+
+- debug: var=slave

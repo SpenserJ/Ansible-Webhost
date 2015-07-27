@@ -3,14 +3,14 @@ max_allowed_packet = 16M
 # Bind to all interfaces, since we block access with UFW.
 bind-address = 0.0.0.0
 
-{% if mysql_master == true %}
+{% if mysql_master != false %}
 # MySQL Master
 log-bin=mysql-bin
 server-id=1
 expire_logs_days=10
 max_binlog_size=1G
-{% elif mysql_slave == true and mysql_slave_id is defined %}
+{% elif mysql_slave != false and mysql_slave.id is defined %}
 # MySQL Slave
-server-id={{ mysql_slave_id }}
+server-id={{ mysql_slave.id }}
 relay-log=mysqld-relay-bin
 {% endif %}

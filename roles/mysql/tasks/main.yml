@@ -63,6 +63,14 @@
   ufw: rule=allow port=3306 src=10.0.0.0/24
   when: "'development' in group_names"
 
+- name: Set up the Master
+  include: master.yml
+  when: mysql_master != false
+
+- name: Set up the Slave
+  include: slave.yml
+  when: mysql_slave != false
+
 - name: Run tasks for preloading data into the server
   include: data.yml
   when: mysql_slave == false
