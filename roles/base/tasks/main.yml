@@ -1,14 +1,26 @@
 ---
+- name: Install the Git Maintainers PPA
+  apt_repository: repo='ppa:git-core/ppa' update_cache=no
+- name: Install an updated PPA for Tmux and Vim
+  apt_repository: repo='ppa:pi-rho/dev' update_cache=no
+
 - name: Update Apt cache
   apt: update_cache=yes cache_valid_time=3600
 
 - name: Install packages we depend on
-  apt: pkg={{ item }} state=present
+  apt: pkg={{ item }} state=latest
   with_items:
   - acl
   - python-pycurl
   - htop
   - build-essential
+  - tmux
+  - zsh
+  - vim
+  - git
+  - man
+  - curl
+
 
 - name: Set Hostname for this boot
   shell: hostname {{ hostname }}

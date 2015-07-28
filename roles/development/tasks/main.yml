@@ -1,21 +1,4 @@
 ---
-- name: Install the Git Maintainers PPA
-  apt_repository: repo='ppa:git-core/ppa' update_cache=no
-- name: Install an updated PPA for Tmux and Vim
-  apt_repository: repo='ppa:pi-rho/dev' update_cache=no
-- name: Update the Apt cache
-  apt: update_cache=yes
-
-- name: Install some development tools
-  apt: pkg={{ item }} state=latest
-  with_items:
-  - tmux
-  - zsh
-  - vim
-  - git-core
-  - graphviz
-  - man
-
 - name: Clone setup-site application
   git: repo=https://github.com/SpenserJ/Webhost-Setup-Site-Scripts.git
        dest=/usr/local/bin/setup-site
