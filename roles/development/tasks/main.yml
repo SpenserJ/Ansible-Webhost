@@ -1,4 +1,6 @@
 ---
+- name: Install the Git Maintainers PPA
+  apt_repository: repo='ppa:git-core/ppa' update_cache=no
 - name: Install an updated PPA for Tmux and Vim
   apt_repository: repo='ppa:pi-rho/dev' update_cache=no
 - name: Update the Apt cache
@@ -10,6 +12,7 @@
   - tmux
   - zsh
   - vim
+  - git-core
   - graphviz
   - man
 

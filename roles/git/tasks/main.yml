@@ -1,3 +1,0 @@
----
-- name: Install Git
-  apt: pkg=git-core state=present

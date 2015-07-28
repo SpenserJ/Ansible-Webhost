@@ -9,7 +9,6 @@
   sudo: True
   roles:
   - base
-  - git
 
 - hosts: webserver
   roles:
