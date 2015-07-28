@@ -24,5 +24,3 @@
 - name: Start replication
   mysql_replication: mode=startslave
   when: slave|failed
-
-- debug: var=slave
