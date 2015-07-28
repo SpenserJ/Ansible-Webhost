@@ -39,6 +39,16 @@
   notify:
   - restart php-fpm
 
+- name: Have we installed Composer before
+  stat: path=/usr/local/bin/composer
+  register: installed_composer
+- name: Install Composer globally
+  shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+  when: installed_composer.stat.exists == false
+- name: Update Composer globally
+  command: composer self-update
+  when: installed_composer.stat.exists == true
+
 - name: Run PHP FPM Tasks
   include: fpm.yml
   when: nginx

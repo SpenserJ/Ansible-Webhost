@@ -1,12 +1,19 @@
-- name: Have we installed Drush before
+- name: Have we installed Drush via Pear before
   stat: path="{{ pear_folder }}/.channels/pear.drush.org.reg"
   register: installed_drush
-- name: Discover Drush Channel
-  command: pear channel-discover pear.drush.org
-  when: installed_drush.stat.exists == false
-- name: Install Drush
-  command: pear install drush/drush
-  when: installed_drush.stat.exists == false
-- name: Prepare Drush for use
-  command: drush
-  when: installed_drush.stat.exists == false
+- name: Uninstall Pear Drush
+  command: pear uninstall drush/drush
+  when: installed_drush.stat.exists == true
+- name: Delete Drush Channel
+  command: pear channel-delete pear.drush.org
+  when: installed_drush.stat.exists == true
+
+- name: Clone Drush repository
+  git: repo=https://github.com/drush-ops/drush.git
+       dest=/usr/local/src/drush
+       version=7.0.0
+       accept_hostkey=yes
+- name: Install Drush dependencies
+  composer: command=install working_dir=/usr/local/src/drush
+- name: Link Drush to /usr/bin
+  file: src=/usr/local/src/drush/drush dest=/usr/bin/drush state=link
