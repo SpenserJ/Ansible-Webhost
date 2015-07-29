@@ -9,3 +9,28 @@
   file: src=/usr/local/bin/setup-site/setup-site
         path=/usr/bin/setup-site
         state=link
+
+- name: Clone PHP Code Sniffer
+  git: repo=https://github.com/squizlabs/PHP_CodeSniffer.git
+       dest=/usr/local/src/phpcs
+       accept_hostkey=yes
+- name: Symlink PHPCS
+  file: src=/usr/local/src/phpcs/scripts/phpcs dest=/usr/local/bin/phpcs state=link
+
+- name: Install the Drupal Coder module to Shared Drush
+  command: drush pm-download -y coder-8.x-2.3 --destination="/usr/share/drush/commands"
+- name: Symlink the Drupal Standards into PHP Code Sniffer's Standards
+  file: src=/usr/share/drush/commands/coder/coder_sniffer/Drupal
+        dest=/usr/local/src/phpcs/CodeSniffer/Standards/Drupal
+        state=link
+
+- name: Clone the Drupal Commit Hooks repository
+  git: repo=https://github.com/SpenserJ/drupal-commit-hooks.git
+       dest=/usr/local/src/drupal-commit-hooks
+       accept_hostkey=yes
+- name: Copy the Post Commit hook to the git hook templates
+  command: cp /usr/local/src/drupal-commit-hooks/post-commit /usr/share/git-core/templates/hooks/
+- name: Copy the Post Commit hook to all configured websites
+  shell: "for dir in $(find /var/www/shared -maxdepth 3 -type d -path \"*/public_html/.git\"); do cp /usr/local/src/drupal-commit-hooks/post-commit \"$dir/hooks/post-commit\"; done"
+  args:
+    executable: /bin/bash
