@@ -15,6 +15,7 @@
   - "php5-xmlrpc"
   - "php5-dev"
   - "php5-mysql"
+  - php5-memcached
   - php-pear
   - mysql-client
   notify:

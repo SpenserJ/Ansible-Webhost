@@ -1,0 +1,17 @@
+- name: Install dependencies
+  apt: pkg=libevent-dev state=present
+- name: Download latest Memcached
+  get_url: url=http://memcached.org/latest dest=/tmp/memcached.tar.gz
+- name: Erase old Memcached source directories
+  file: path=/tmp/memcached state=absent
+- name: Make a base directory for extracting Memcached
+  file: path=/tmp/memcached state=directory
+- name: Extract memcached.tar.gz
+  unarchive: src=/tmp/memcached.tar.gz dest=/tmp/memcached copy=no
+- name: Get the extracted folder for memcached
+  command: ls /tmp/memcached
+  register: memcached_src
+- name: Configure and install Memcached
+  shell: ./configure --prefix=/usr/local && make && make install
+  args:
+    chdir: "/tmp/memcached/{{ memcached_src.stdout }}"

@@ -30,6 +30,7 @@ $default_host_types = array(
     'nginx' => true,
     'haproxy' => false,
     'varnish' => false,
+    'memcached' => FALSE,
   ),
 
   'production' => array(
@@ -43,6 +44,8 @@ $default_host_types = array(
 
     'varnish' => true,
     'varnish_port' => 8080,
+
+    'memcached' => FALSE,
   ),
 
   'webserver' => array(

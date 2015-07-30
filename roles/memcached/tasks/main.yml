@@ -1,0 +1,21 @@
+---
+- name: Check if Memcached is already installed
+  command: memcached -V
+  ignore_errors: true
+  register: memcached_version
+
+- name: Run Memcached install tasks
+  include: install.yml
+  when: memcached_version|failed or memcached_version.stdout != "memcached 1.4.24"
+
+- name: Configure the Memcached user
+  user: name=memcached system=yes createhome=no
+
+- name: Configure Memcached Upstart script
+  copy: src=upstart dest=/etc/init/memcached.conf
+  notify: restart memcached
+
+- name: Expose Memcached to approved servers
+  ufw: rule=allow port=11211 from_ip={{ item }}
+  with_items: memcached.exposed
+  when: memcached.exposed is defined

@@ -21,6 +21,7 @@
   - { role: nginx,   when: nginx   == true }
   - { role: varnish, when: varnish == true }
   - { role: haproxy, when: haproxy == true }
+  - { role: memcached, when: memcached != false }
   - php
 
 - hosts: database

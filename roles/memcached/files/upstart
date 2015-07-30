@@ -1,0 +1,14 @@
+description "Memcached Upstart script"
+author "Spenser Jones <hello@spenserj.com>"
+
+start on (local-filesystems and net-device-up)
+stop on shutdown
+
+env MEMCACHED=/usr/local/bin/memcached
+instance "memcached"
+
+respawn limit 5 60
+
+script
+  exec $MEMCACHED -m 128 -u memcached -p 11211
+end script
