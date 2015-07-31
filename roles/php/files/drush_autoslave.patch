@@ -1,0 +1,17 @@
+diff --git a/commands/sql/sql.drush.inc b/commands/sql/sql.drush.inc
+index 3173794..9e6c7a7 100644
+--- a/commands/sql/sql.drush.inc
++++ b/commands/sql/sql.drush.inc
+@@ -571,6 +571,12 @@ function drush_sql_get_class($db_spec = NULL) {
+ 
+   // Try a few times to quickly get $db_spec.
+   if ($db_spec) {
++    if ($db_spec['driver'] === 'autoslave') {
++      $target = $db_spec['master'][0];
++      if (isset($GLOBALS['databases'][$database][$target]) === TRUE) {
++        $db_spec = $GLOBALS['databases'][$database][$target];
++      }
++    }
+     return drush_get_class(array('Drush\Sql\Sql', 'Drupal\Driver\Database\\' .  $db_spec['driver'] . '\Drush'), array($db_spec), array($db_spec['driver']));
+   }
+   elseif ($url = drush_get_option('db-url')) {

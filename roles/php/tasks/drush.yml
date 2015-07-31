@@ -13,6 +13,14 @@
        dest=/usr/local/src/drush
        version=7.0.0
        accept_hostkey=yes
+       force=yes
+
+# https://github.com/ansible/ansible-modules-extras/issues/338
+- name: Copy Drush Autoslave patch as workaround for Ansible 1.9 bug
+  copy: src=drush_autoslave.patch dest=/tmp/drush_autoslave.patch
+- name: Patch Drush for AutoSlave support
+  patch: src=/tmp/drush_autoslave.patch basedir=/usr/local/src/drush strip=1 remote_src=True
+
 - name: Install Drush dependencies
   composer: command=install working_dir=/usr/local/src/drush
 - name: Link Drush to /usr/bin
