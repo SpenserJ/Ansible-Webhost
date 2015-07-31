@@ -24,13 +24,25 @@
         dest=/usr/local/src/phpcs/CodeSniffer/Standards/Drupal
         state=link
 
-- name: Clone the Drupal Commit Hooks repository
-  git: repo=https://github.com/SpenserJ/drupal-commit-hooks.git
-       dest=/usr/local/src/drupal-commit-hooks
+- name: Install NPM packages used for linting source code
+  npm: name={{ item }} global=yes
+  with_items:
+  - esprima
+  - eslint
+  - jshint
+
+- name: Clone the Code Quality Hooks repository
+  git: repo=https://github.com/SpenserJ/Code-Quality-Hooks.git
+       dest=/usr/local/src/code-quality-hooks
        accept_hostkey=yes
-- name: Copy the Post Commit hook to the git hook templates
-  command: cp /usr/local/src/drupal-commit-hooks/post-commit /usr/share/git-core/templates/hooks/
-- name: Copy the Post Commit hook to all configured websites
-  shell: "for dir in $(find /var/www/shared -maxdepth 3 -type d -path \"*/public_html/.git\"); do cp /usr/local/src/drupal-commit-hooks/post-commit \"$dir/hooks/post-commit\"; done"
+- name: Install the Code Quality Hooks dependencies
+  npm: path=/usr/local/src/code-quality-hooks production=yes
+- name: Symlink the Post Commit hook to the git hook templates
+  file: src=/usr/local/src/code-quality-hooks/code-quality-post-commit.js
+        dest=/usr/share/git-core/templates/hooks/post-commit
+        state=link
+        force=true
+- name: Symlink the Post Commit hook to all configured websites
+  shell: "for dir in $(find /var/www/shared -maxdepth 3 -type d -path \"*/public_html/.git\"); do ln --force -s /usr/local/src/code-quality-hooks/code-quality-post-commit.js  \"$dir/hooks/post-commit\"; done"
   args:
     executable: /bin/bash
