@@ -34,7 +34,8 @@
   roles:
   - node
   - development
-#  - mailblock
+  - { role: geerlingguy.mailhog }
+  - mailblock
 
 - hosts: all
   sudo: True
