@@ -7,7 +7,7 @@ index 3173794..9e6c7a7 100644
    // Try a few times to quickly get $db_spec.
    if ($db_spec) {
 +    if ($db_spec['driver'] === 'autoslave') {
-+      $target = $db_spec['master'][0];
++      $target = 'master';
 +      if (isset($GLOBALS['databases'][$database][$target]) === TRUE) {
 +        $db_spec = $GLOBALS['databases'][$database][$target];
 +      }
