@@ -101,22 +101,22 @@ pm = dynamic
 ; forget to tweak pm.* to fit your needs.
 ; Note: Used when pm is set to 'static', 'dynamic' or 'ondemand'
 ; Note: This value is mandatory.
-pm.max_children = 25
+pm.max_children = {{ item.php_process_max_total|default(25) }}
 
 ; The number of child processes created on startup.
 ; Note: Used only when pm is set to 'dynamic'
 ; Default Value: min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-pm.start_servers = 10
+pm.start_servers = {{ item.php_process_initial|default(10) }}
 
 ; The desired minimum number of idle server processes.
 ; Note: Used only when pm is set to 'dynamic'
 ; Note: Mandatory when pm is set to 'dynamic'
-pm.min_spare_servers = 5
+pm.min_spare_servers = {{ item.php_process_min_spare|default(5) }}
 
 ; The desired maximum number of idle server processes.
 ; Note: Used only when pm is set to 'dynamic'
 ; Note: Mandatory when pm is set to 'dynamic'
-pm.max_spare_servers = 10
+pm.max_spare_servers = {{ item.php_process_max_spare|default(10) }}
 
 ; The number of seconds after which an idle process will be killed.
 ; Note: Used only when pm is set to 'ondemand'
@@ -127,7 +127,7 @@ pm.max_spare_servers = 10
 ; This can be useful to work around memory leaks in 3rd party libraries. For
 ; endless request processing specify '0'. Equivalent to PHP_FCGI_MAX_REQUESTS.
 ; Default Value: 0
-pm.max_requests = 500
+pm.max_requests = {{ item.php_process_max_requests|default(500) }}
 
 ; The URI to view the FPM status page. If this value is not set, no URI will be
 ; recognized as a status page. It shows the following informations:
