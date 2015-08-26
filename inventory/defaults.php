@@ -61,6 +61,7 @@ $default_host_types = array(
         'loadbalanced' => FALSE,
       ),
     ),
+    'loadbalancer' => array('127.0.0.1'),
   ),
 
   'database' => array(
